@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title> LaunchPad</title>
+  <title>LaunchPad</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     :root {
       --navy: #0b1f3b;
@@ -25,910 +26,270 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     body {
-      background: radial-gradient(circle at top left, #ffffff 0, #f3f4f6 40%, #e5e7eb 100%);
+      background: var(--bg);
+      padding: 40px;
       color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      padding: 32px 16px;
     }
 
-    .app-shell {
-      width: 100%;
-      max-width: 1200px;
-      background: linear-gradient(145deg, #ffffff 0%, #f9fafb 40%, #eef2ff 100%);
-      border-radius: 28px;
-      box-shadow: var(--shadow-soft);
-      padding: 28px 26px 24px;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      backdrop-filter: blur(18px);
-    }
-
-    @media (max-width: 768px) {
-      .app-shell {
-        padding: 20px 16px 18px;
-        border-radius: 22px;
-      }
-    }
-
+    /* Header */
     .header {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 18px;
-      margin-bottom: 24px;
-      align-items: flex-start;
-    }
-
-    .header-main {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .title-row {
-      display: flex;
       align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 30px;
     }
 
-    .title {
-      font-size: 1.8rem;
+    .header img {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+    }
+
+    .header h1 {
+      font-size: 32px;
       font-weight: 700;
-      letter-spacing: 0.02em;
       color: var(--navy);
     }
 
-    .badge {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      border: 1px solid rgba(37, 99, 235, 0.25);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .badge-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
-    }
-
-    .subtitle {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      max-width: 520px;
-    }
-
-    .header-stats {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: flex-end;
-      min-width: 180px;
-    }
-
-    @media (max-width: 768px) {
-      .header-stats {
-        align-items: flex-start;
-      }
-    }
-
-    .pill-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .pill {
-      font-size: 0.78rem;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background: rgba(255, 255, 255, 0.9);
-      color: var(--text-muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .pill-icon {
-      width: 14px;
-      height: 14px;
-      border-radius: 4px;
-      background: linear-gradient(135deg, var(--accent), #4f46e5);
-    }
-
-    .last-refresh {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .layout-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr);
-      gap: 18px;
-      align-items: flex-start;
-    }
-
-    @media (max-width: 900px) {
-      .layout-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.98);
+    /* Filter Card */
+    .filter-card {
+      background: var(--card-bg);
+      padding: 24px;
       border-radius: var(--radius-lg);
-      border: 1px solid var(--border-soft);
-      padding: 16px 16px 14px;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 30px;
     }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
+    .filter-group {
+      margin-bottom: 20px;
     }
 
-    .card-title {
-      font-size: 0.95rem;
+    .filter-label {
+      font-size: 14px;
       font-weight: 600;
-      color: var(--navy-light);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
     }
 
-    .card-subtitle {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .filters-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Slider */
+    .slider-box {
+      display: flex;
+      align-items: center;
       gap: 12px;
-      margin-bottom: 12px;
     }
 
-    @media (max-width: 600px) {
-      .filters-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .field-label {
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--navy-light);
-    }
-
-    .field-hint {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .input {
+    .slider-box input {
       width: 100%;
-      padding: 9px 10px;
+    }
+
+    /* Multi-select dropdown */
+    .dropdown {
+      width: 100%;
+      padding: 10px;
       border-radius: var(--radius-md);
-      border: 1px solid rgba(148, 163, 184, 0.8);
-      background: rgba(249, 250, 251, 0.9);
-      font-size: 0.85rem;
-      color: var(--text-main);
-      outline: none;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      border: 1px solid var(--border-soft);
     }
 
-    .input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
-      background: #ffffff;
-    }
-
-    .input::placeholder {
-      color: #9ca3af;
-    }
-
-    .controls-row {
+    /* Selected tags */
+    .selected-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, color 0.12s ease;
-      white-space: nowrap;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #4f46e5);
-      color: #ffffff;
-      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.45);
-    }
-
-    .btn-secondary {
-      background: rgba(15, 23, 42, 0.04);
-      color: var(--navy-light);
-      border: 1px solid rgba(148, 163, 184, 0.8);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(15, 23, 42, 0.06);
-      transform: translateY(-1px);
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--navy-light);
-      border: 1px dashed rgba(148, 163, 184, 0.8);
-    }
-
-    .btn-ghost:hover {
-      background: rgba(15, 23, 42, 0.03);
-      transform: translateY(-1px);
-    }
-
-    .btn-icon {
-      width: 16px;
-      height: 16px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.9);
-    }
-
-    .btn-icon-refresh {
-      background: radial-gradient(circle at 30% 30%, #ffffff 0, #93c5fd 40%, #1d4ed8 100%);
-    }
-
-    .btn-icon-reset {
-      background: radial-gradient(circle at 30% 30%, #ffffff 0, #fecaca 40%, #b91c1c 100%);
-    }
-
-    .btn-icon-download {
-      background: radial-gradient(circle at 30% 30%, #ffffff 0, #bbf7d0 40%, #16a34a 100%);
-    }
-
-    .jobs-card {
-      display: flex;
-      flex-direction: column;
       gap: 10px;
-    }
-
-    .jobs-meta-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 4px;
-    }
-
-    .jobs-count {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .jobs-count strong {
-      color: var(--navy-light);
-    }
-
-    .jobs-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: flex-end;
+      margin-top: 10px;
     }
 
     .tag {
-      font-size: 0.75rem;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.04);
-      color: var(--text-muted);
-      border: 1px solid rgba(148, 163, 184, 0.6);
-    }
-
-    .table-wrapper {
+      background: var(--accent-soft);
+      padding: 6px 12px;
       border-radius: var(--radius-md);
-      border: 1px solid var(--border-soft);
-      overflow: hidden;
-      background: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: relative;
     }
 
-    .table-scroll {
-      max-height: 420px;
-      overflow: auto;
+    .tag .remove {
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--navy);
     }
 
+    /* Buttons */
+    .btn {
+      background: var(--accent);
+      color: white;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .btn:hover {
+      background: var(--navy-light);
+    }
+
+    /* Job Table */
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.85rem;
+      margin-top: 20px;
+      background: white;
+      border-radius: var(--radius-md);
+      overflow: hidden;
     }
 
-    thead {
-      background: linear-gradient(135deg, #0b1f3b, #1f2937);
-      color: #e5e7eb;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    th,
-    td {
-      padding: 9px 10px;
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-soft);
       text-align: left;
-      border-bottom: 1px solid #e5e7eb;
     }
 
     th {
+      background: var(--accent-soft);
       font-weight: 600;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      white-space: nowrap;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #f9fafb;
-    }
-
-    tbody tr:hover {
-      background: #eef2ff;
-    }
-
-    .job-title-cell {
-      font-weight: 600;
-      color: var(--navy-light);
-    }
-
-    .job-company {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .job-link a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .job-link a:hover {
-      text-decoration: underline;
-    }
-
-    .job-keywords {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    .footer {
-      margin-top: 18px;
-      padding-top: 12px;
-      border-top: 1px dashed rgba(148, 163, 184, 0.7);
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .footer-left {
-      max-width: 420px;
-    }
-
-    .footer-right {
-      text-align: right;
-    }
-
-    @media (max-width: 768px) {
-      .footer-right {
-        text-align: left;
-      }
-    }
-
-    .footer-highlight {
-      color: var(--accent);
-      font-weight: 500;
     }
   </style>
 </head>
+
 <body>
-  <div class="app-shell">
-    <header class="header">
-      <div class="header-main">
-        <div class="title-row">
-          <h1 class="title">My Job Intelligence Dashboard</h1>
-          <div class="badge">
-            <span class="badge-dot"></span>
-            PERSONAL JOB RADAR
-          </div>
-        </div>
-        <p class="subtitle">
-          A personal, front‑end‑only job dashboard that lets you filter, refresh, and download active roles across regions.
-        </p>
-      </div>
-      <div class="header-stats">
-        <div class="pill-row">
-          <div class="pill">
-            <span class="pill-icon"></span>
-            Front‑end only · Pure HTML/CSS/JS
-          </div>
-          <div class="pill">
-            <span class="pill-icon"></span>
-            Ready for JSON & API job feeds
-          </div>
-        </div>
-        <div class="last-refresh" id="lastRefreshText">
-          Last refresh: Not yet refreshed
-        </div>
-      </div>
-    </header>
 
-    <main class="layout-grid">
-      <!-- Filters card -->
-      <section class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Filters</div>
-            <div class="card-subtitle">Adjust these fields to focus on the jobs you care about.</div>
-          </div>
-        </div>
-
-        <div class="filters-grid">
-          <div class="field-group">
-            <label class="field-label" for="keywordInput">Job Title Keywords</label>
-            <input
-              id="keywordInput"
-              class="input"
-              type="text"
-              placeholder="e.g. AI, Python, Data, Manager"
-            />
-            <div class="field-hint">Matches job title or keywords.</div>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label" for="experienceInput">Experience (years)</label>
-            <input
-              id="experienceInput"
-              class="input"
-              type="number"
-              min="0"
-              placeholder="e.g. 0, 2, 5"
-            />
-            <div class="field-hint">Shows jobs requiring up to this many years.</div>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label" for="salaryInput">Salary (min)</label>
-            <input
-              id="salaryInput"
-              class="input"
-              type="number"
-              min="0"
-              placeholder="e.g. 40000"
-            />
-            <div class="field-hint">Shows jobs with salary at or above this amount.</div>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label" for="countryInput">Country / Region</label>
-            <input
-              id="countryInput"
-              class="input"
-              type="text"
-              placeholder="e.g. Netherlands, Europe, India"
-            />
-            <div class="field-hint">Matches country or region name.</div>
-          </div>
-        </div>
-
-        <div class="controls-row">
-          <button id="refreshBtn" class="btn btn-primary">
-            <span class="btn-icon btn-icon-refresh"></span>
-            Refresh Jobs
-          </button>
-          <button id="resetBtn" class="btn btn-secondary">
-            <span class="btn-icon btn-icon-reset"></span>
-            Reset Filters
-          </button>
-          <button id="downloadBtn" class="btn btn-ghost">
-            <span class="btn-icon btn-icon-download"></span>
-            Download Excel (CSV)
-          </button>
-        </div>
-      </section>
-
-      <!-- Jobs card -->
-      <section class="card jobs-card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Active Jobs</div>
-            <div class="card-subtitle">Filtered results based on your current settings.</div>
-          </div>
-        </div>
-
-        <div class="jobs-meta-row">
-          <div class="jobs-count" id="jobsCountText">
-            Showing <strong>0</strong> jobs
-          </div>
-          <div class="jobs-tags">
-            <span class="tag">Netherlands</span>
-            <span class="tag">Europe</span>
-            <span class="tag">India</span>
-            <span class="tag">UAE</span>
-            <span class="tag">Remote & Hybrid</span>
-          </div>
-        </div>
-
-        <div class="table-wrapper">
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Job</th>
-                  <th>Country</th>
-                  <th>Experience</th>
-                  <th>Salary</th>
-                  <th>Keywords</th>
-                  <th>Link</th>
-                </tr>
-              </thead>
-              <tbody id="jobsTableBody">
-                <!-- Rows will be injected by JavaScript -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <div class="footer-left">
-        Designed as a personal job‑intelligence hub. Front‑end only, ready for JSON files and future API connections.
-      </div>
-      <div class="footer-right">
-        <span class="footer-highlight">Tip:</span> Update the job list inside the code to keep your dashboard fresh.
-      </div>
-    </footer>
+  <!-- Header -->
+  <div class="header">
+    <img src="https://via.placeholder.com/48" alt="Logo">
+    <h1>LaunchPad</h1>
   </div>
 
+  <!-- Filters -->
+  <div class="filter-card">
+
+    <!-- Experience Slider -->
+    <div class="filter-group">
+      <label class="filter-label">Experience (Years)</label>
+      <div class="slider-box">
+        <span id="minExpLabel">0</span>
+        <input type="range" id="minExp" min="0" max="20" value="0">
+        <span id="maxExpLabel">20</span>
+        <input type="range" id="maxExp" min="0" max="20" value="20">
+      </div>
+    </div>
+
+    <!-- Country / Region -->
+    <div class="filter-group">
+      <label class="filter-label">Country / Region</label>
+      <select id="countrySelect" class="dropdown" multiple>
+        <optgroup label="Continents">
+          <option value="Europe">Europe</option>
+          <option value="Asia">Asia</option>
+          <option value="Africa">Africa</option>
+          <option value="North America">North America</option>
+          <option value="South America">South America</option>
+        </optgroup>
+
+        <optgroup label="Countries">
+          <option value="Netherlands">Netherlands</option>
+          <option value="India">India</option>
+          <option value="UAE">UAE</option>
+          <option value="USA">USA</option>
+          <option value="Germany">Germany</option>
+        </optgroup>
+      </select>
+
+      <div id="selectedTags" class="selected-tags"></div>
+    </div>
+
+    <!-- Search Button -->
+    <button class="btn" onclick="searchJobs()">Search</button>
+    <button class="btn" onclick="downloadExcel()">Download Excel</button>
+
+  </div>
+
+  <!-- Job Table -->
+  <table id="jobTable">
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Company</th>
+        <th>Experience</th>
+        <th>Location</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
   <script>
-    // SAMPLE JOB DATA (you can edit this later)
-    const baseJobData = [
-      {
-        title: "AI Engineer",
-        company: "InnovateAI",
-        country: "Netherlands",
-        experience: 3,
-        salary: 65000,
-        link: "https://example.com/jobs/ai-engineer-nl",
-        keywords: ["AI", "Python", "Machine Learning", "Cloud"]
-      },
-      {
-        title: "Data Analyst",
-        company: "EuroData Insights",
-        country: "Europe",
-        experience: 2,
-        salary: 50000,
-        link: "https://example.com/jobs/data-analyst-eu",
-        keywords: ["SQL", "Excel", "BI", "Reporting"]
-      },
-      {
-        title: "Senior Software Engineer",
-        company: "GlobalTech",
-        country: "India",
-        experience: 5,
-        salary: 1800000,
-        link: "https://example.com/jobs/senior-software-india",
-        keywords: ["Java", "Microservices", "Cloud", "Architecture"]
-      },
-      {
-        title: "Cloud Architect",
-        company: "SkyStack",
-        country: "UAE",
-        experience: 7,
-        salary: 320000,
-        link: "https://example.com/jobs/cloud-architect-uae",
-        keywords: ["Cloud", "AWS", "Azure", "DevOps"]
-      },
-      {
-        title: "Product Manager - Tech",
-        company: "Nordic Digital",
-        country: "Europe",
-        experience: 4,
-        salary: 80000,
-        link: "https://example.com/jobs/product-manager-eu",
-        keywords: ["Product", "Agile", "Roadmap", "Stakeholders"]
-      },
-      {
-        title: "Junior Python Developer",
-        company: "StartUp Lab",
-        country: "Netherlands",
-        experience: 1,
-        salary: 42000,
-        link: "https://example.com/jobs/junior-python-nl",
-        keywords: ["Python", "APIs", "Django", "REST"]
-      },
-      {
-        title: "Data Engineer",
-        company: "DataBridge",
-        country: "India",
-        experience: 3,
-        salary: 1500000,
-        link: "https://example.com/jobs/data-engineer-india",
-        keywords: ["ETL", "Python", "SQL", "Big Data"]
-      },
-      {
-        title: "AI Product Lead",
-        company: "FutureVision",
-        country: "UAE",
-        experience: 6,
-        salary: 350000,
-        link: "https://example.com/jobs/ai-product-lead-uae",
-        keywords: ["AI", "Product", "Strategy", "Leadership"]
-      },
-      {
-        title: "Remote Data Scientist",
-        company: "Global Remote Analytics",
-        country: "Remote / Europe",
-        experience: 4,
-        salary: 90000,
-        link: "https://example.com/jobs/remote-data-scientist",
-        keywords: ["Data Science", "Python", "ML", "Remote"]
-      },
-      {
-        title: "Business Analyst",
-        company: "ConsultPro",
-        country: "Netherlands",
-        experience: 2,
-        salary: 55000,
-        link: "https://example.com/jobs/business-analyst-nl",
-        keywords: ["Business Analysis", "Stakeholders", "Requirements", "Documentation"]
-      }
-    ];
+    // Tag removal
+    const selectedTags = document.getElementById("selectedTags");
+    const countrySelect = document.getElementById("countrySelect");
 
-    let currentJobs = [];
+    countrySelect.addEventListener("change", () => {
+      selectedTags.innerHTML = "";
+      [...countrySelect.selectedOptions].forEach(opt => {
+        const tag = document.createElement("div");
+        tag.className = "tag";
+        tag.innerHTML = `${opt.value} <span class="remove" onclick="removeTag('${opt.value}')">×</span>`;
+        selectedTags.appendChild(tag);
+      });
+    });
 
-    const keywordInput = document.getElementById("keywordInput");
-    const experienceInput = document.getElementById("experienceInput");
-    const salaryInput = document.getElementById("salaryInput");
-    const countryInput = document.getElementById("countryInput");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const downloadBtn = document.getElementById("downloadBtn");
-    const jobsTableBody = document.getElementById("jobsTableBody");
-    const jobsCountText = document.getElementById("jobsCountText");
-    const lastRefreshText = document.getElementById("lastRefreshText");
-
-    function cloneJobData() {
-      return baseJobData.map(job => ({ ...job }));
+    function removeTag(value) {
+      [...countrySelect.options].forEach(opt => {
+        if (opt.value === value) opt.selected = false;
+      });
+      countrySelect.dispatchEvent(new Event("change"));
     }
 
-    function applyFilters(jobs) {
-      const keywordValue = keywordInput.value.trim().toLowerCase();
-      const experienceValue = experienceInput.value.trim();
-      const salaryValue = salaryInput.value.trim();
-      const countryValue = countryInput.value.trim().toLowerCase();
+    // Experience slider labels
+    const minExp = document.getElementById("minExp");
+    const maxExp = document.getElementById("maxExp");
+    const minExpLabel = document.getElementById("minExpLabel");
+    const maxExpLabel = document.getElementById("maxExpLabel");
 
-      return jobs.filter(job => {
-        let matches = true;
+    minExp.oninput = () => minExpLabel.textContent = minExp.value;
+    maxExp.oninput = () => maxExpLabel.textContent = maxExp.value;
 
-        if (keywordValue) {
-          const combinedText =
-            (job.title + " " + job.keywords.join(" ")).toLowerCase();
-          if (!combinedText.includes(keywordValue)) {
-            matches = false;
-          }
-        }
+    // Dummy job data
+    const jobs = [
+      { role: "AI Engineer", company: "Google", exp: 5, loc: "Netherlands" },
+      { role: "Data Scientist", company: "Microsoft", exp: 3, loc: "India" },
+      { role: "Cloud Architect", company: "AWS", exp: 8, loc: "UAE" }
+    ];
 
-        if (experienceValue) {
-          const maxYears = Number(experienceValue);
-          if (!isNaN(maxYears) && job.experience > maxYears) {
-            matches = false;
-          }
-        }
+    function searchJobs() {
+      const min = Number(minExp.value);
+      const max = Number(maxExp.value);
+      const selected = [...countrySelect.selectedOptions].map(o => o.value);
 
-        if (salaryValue) {
-          const minSalary = Number(salaryValue);
-          if (!isNaN(minSalary) && job.salary < minSalary) {
-            matches = false;
-          }
-        }
+      const filtered = jobs.filter(j =>
+        j.exp >= min &&
+        j.exp <= max &&
+        selected.includes(j.loc)
+      );
 
-        if (countryValue) {
-          const jobCountry = job.country.toLowerCase();
-          if (!jobCountry.includes(countryValue)) {
-            matches = false;
-          }
-        }
+      const tbody = document.querySelector("#jobTable tbody");
+      tbody.innerHTML = "";
 
-        return matches;
+      filtered.forEach(j => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${j.role}</td>
+            <td>${j.company}</td>
+            <td>${j.exp}</td>
+            <td>${j.loc}</td>
+          </tr>`;
       });
     }
 
-    function renderJobs(jobs) {
-      jobsTableBody.innerHTML = "";
-
-      if (jobs.length === 0) {
-        const row = document.createElement("tr");
-        const cell = document.createElement("td");
-        cell.colSpan = 6;
-        cell.textContent = "No jobs match your current filters. Try adjusting the fields above.";
-        cell.style.textAlign = "center";
-        cell.style.color = "#6b7280";
-        row.appendChild(cell);
-        jobsTableBody.appendChild(row);
-      } else {
-        jobs.forEach(job => {
-          const row = document.createElement("tr");
-
-          const titleCell = document.createElement("td");
-          titleCell.className = "job-title-cell";
-          titleCell.innerHTML =
-            job.title +
-            '<div class="job-company">' +
-            job.company +
-            "</div>";
-
-          const countryCell = document.createElement("td");
-          countryCell.textContent = job.country;
-
-          const experienceCell = document.createElement("td");
-          experienceCell.textContent = job.experience + " yrs";
-
-          const salaryCell = document.createElement("td");
-          salaryCell.textContent = job.salary.toLocaleString();
-
-          const keywordsCell = document.createElement("td");
-          keywordsCell.className = "job-keywords";
-          keywordsCell.textContent = job.keywords.join(", ");
-
-          const linkCell = document.createElement("td");
-          linkCell.className = "job-link";
-          const link = document.createElement("a");
-          link.href = job.link;
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-          link.textContent = "View";
-          linkCell.appendChild(link);
-
-          row.appendChild(titleCell);
-          row.appendChild(countryCell);
-          row.appendChild(experienceCell);
-          row.appendChild(salaryCell);
-          row.appendChild(keywordsCell);
-          row.appendChild(linkCell);
-
-          jobsTableBody.appendChild(row);
-        });
-      }
-
-      jobsCountText.innerHTML =
-        'Showing <strong>' + jobs.length + "</strong> jobs";
+    // Excel export
+    function downloadExcel() {
+      alert("Professional Excel export will be added next — formatting, borders, auto-width, colors.");
     }
-
-    function updateLastRefreshTime() {
-      const now = new Date();
-      const options = {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      };
-      lastRefreshText.textContent =
-        "Last refresh: " + now.toLocaleString(undefined, options);
-    }
-
-    function refreshJobs() {
-      const cloned = cloneJobData();
-      const filtered = applyFilters(cloned);
-      currentJobs = filtered;
-      renderJobs(filtered);
-      updateLastRefreshTime();
-    }
-
-    function resetFilters() {
-      keywordInput.value = "";
-      experienceInput.value = "";
-      salaryInput.value = "";
-      countryInput.value = "";
-      refreshJobs();
-    }
-
-    function downloadCSV() {
-      const jobsToExport = currentJobs.length ? currentJobs : applyFilters(cloneJobData());
-
-      if (!jobsToExport.length) {
-        alert("No jobs to download. Try refreshing or adjusting your filters.");
-        return;
-      }
-
-      const header = [
-        "Job Title",
-        "Company",
-        "Country",
-        "Experience (years)",
-        "Salary",
-        "Keywords",
-        "Link"
-      ];
-
-      const rows = jobsToExport.map(job => [
-        job.title,
-        job.company,
-        job.country,
-        job.experience,
-        job.salary,
-        job.keywords.join(" | "),
-        job.link
-      ]);
-
-      const csvContent =
-        [header, ...rows]
-          .map(row =>
-            row
-              .map(value => {
-                const stringValue = String(value).replace(/"/g, '""');
-                return '"' + stringValue + '"';
-              })
-              .join(",")
-          )
-          .join("\n");
-
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "job-dashboard-export.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-
-    refreshBtn.addEventListener("click", refreshJobs);
-    resetBtn.addEventListener("click", resetFilters);
-    downloadBtn.addEventListener("click", downloadCSV);
-
-    refreshJobs();
   </script>
+
 </body>
 </html>
