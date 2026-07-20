@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal — Personal Job Intelligence</title>
+<!-- ExcelJS builds the formatted, colour-styled .xlsx file entirely in your browser. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+  :root{
+    --navy-950:#0a1830;
+    --navy-900:#0e2140;
+    --navy-800:#14315c;
+    --navy-700:#1c4278;
+    --navy-100:#e7edf7;
+    --bg:#f5f7fb;
+    --white:#ffffff;
+    --ink:#152238;
+    --ink-soft:#5b6a85;
+    --border:#e1e7f2;
+    --accent:#2f6fed;
+    --accent-soft:#eaf1ff;
+    --good:#1f9d6c;
+    --good-soft:#e8f8f1;
+    --warn:#c98a1a;
+    --warn-soft:#fbf1de;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --shadow:0 10px 30px -12px rgba(14,33,64,0.18);
+    --shadow-sm:0 2px 8px -2px rgba(14,33,64,0.12);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+  body{-webkit-font-smoothing:antialiased;}
+
+  body{
+    background-image:
+      linear-gradient(rgba(14,33,64,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(14,33,64,0.035) 1px, transparent 1px);
+    background-size: 34px 34px;
+    background-attachment:fixed;
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 24px 80px;}
+
+  /* ---------- Header ---------- */
+  header.hero{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:24px;flex-wrap:wrap;margin-bottom:32px;
+  }
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand-mark{
+    width:44px;height:44px;border-radius:12px;
+    background:linear-gradient(155deg, var(--navy-800), var(--navy-950));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow-sm);
+    flex-shrink:0;
+  }
+  .brand-mark svg{width:22px;height:22px;}
+  .brand-text h1{
+    font-size:26px;letter-spacing:-0.02em;margin:0;font-weight:800;color:var(--navy-950);
+  }
+  .brand-text p{margin:2px 0 0;color:var(--ink-soft);font-size:14px;}
+
+  .status-badge{
+    display:flex;align-items:center;gap:10px;
+    background:var(--white);border:1px solid var(--border);
+    padding:9px 16px;border-radius:999px;box-shadow:var(--shadow-sm);
+    font-size:13px;color:var(--ink-soft);
+  }
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--good);position:relative;flex-shrink:0;}
+  .status-dot::after{
+    content:"";position:absolute;inset:-4px;border-radius:50%;
+    border:1.5px solid var(--good);opacity:0.5;
+    animation:pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{transform:scale(0.6);opacity:0.6;}
+    80%{transform:scale(1.8);opacity:0;}
+    100%{opacity:0;}
+  }
+  #statusText b{color:var(--navy-900);font-weight:700;}
+
+  /* ---------- Panels ---------- */
+  .panel{
+    background:var(--white);border:1px solid var(--border);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow);
+    padding:26px;margin-bottom:22px;
+  }
+  .panel-title{
+    display:flex;align-items:center;gap:8px;
+    font-size:12px;text-transform:uppercase;letter-spacing:0.08em;
+    color:var(--navy-700);font-weight:700;margin-bottom:18px;
+  }
+  .panel-title .line{flex:1;height:1px;background:var(--border);}
+
+  /* ---------- Data source panel ---------- */
+  .source-toggle{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+  .source-btn{
+    background:var(--bg);color:var(--ink-soft);border:1.5px solid var(--border);
+    border-radius:999px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer;
+    transition:all .15s;
+  }
+  .source-btn.active{background:var(--navy-950);color:var(--white);border-color:var(--navy-950);}
+  .source-desc{font-size:13px;color:var(--ink-soft);margin:0 0 6px;}
+  .live-setup{margin-top:14px;padding-top:18px;border-top:1px dashed var(--border);}
+  .live-steps ol{margin:0 0 18px;padding-left:20px;color:var(--ink-soft);font-size:13.5px;line-height:1.7;}
+  .live-steps a{color:var(--accent);font-weight:600;text-decoration:none;}
+  .live-steps a:hover{text-decoration:underline;}
+  .live-steps b{color:var(--ink);}
+  .connect-status{font-size:13px;font-weight:700;}
+  .connect-status.ok{color:var(--good);}
+  .connect-status.pending{color:var(--ink-soft);}
+
+  .filter-grid{
+    display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:20px;
+  }
+  .filter-grid.two-col{grid-template-columns:1fr 1fr;margin-bottom:16px;}
+  @media (max-width:880px){.filter-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:520px){.filter-grid{grid-template-columns:1fr;}}
+
+  .field label{
+    display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+    margin-bottom:7px;
+  }
+  .field .hint{font-size:11px;color:var(--ink-soft);font-weight:400;margin-left:4px;}
+  .field input, .field select{
+    width:100%;padding:11px 13px;border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);font-size:14px;color:var(--ink);
+    background:var(--bg);transition:border-color .15s, box-shadow .15s;
+    font-family:inherit;
+  }
+  .field input:focus, .field select:focus{
+    outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);background:var(--white);
+  }
+  .field input:disabled{opacity:0.55;cursor:not-allowed;}
+
+  .action-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  button{
+    font-family:inherit;font-size:14px;font-weight:700;border:none;
+    border-radius:var(--radius-sm);padding:12px 20px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:8px;transition:transform .1s, box-shadow .15s, background .15s;
+  }
+  button:active{transform:translateY(1px);}
+  .btn-primary{background:var(--navy-950);color:var(--white);box-shadow:var(--shadow-sm);}
+  .btn-primary:hover{background:var(--navy-800);}
+  .btn-ghost{background:var(--white);color:var(--navy-900);border:1.5px solid var(--border);}
+  .btn-ghost:hover{border-color:var(--navy-700);}
+  .btn-good{background:var(--good);color:var(--white);}
+  .btn-good:hover{background:#188457;}
+  button:disabled{opacity:0.6;cursor:not-allowed;}
+  .spacer{flex:1;}
+  .result-count{font-size:13px;color:var(--ink-soft);}
+  .result-count b{color:var(--navy-950);}
+
+  .progress-track{height:3px;width:100%;background:var(--border);border-radius:3px;overflow:hidden;margin-top:18px;display:none;}
+  .progress-track.show{display:block;}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg, var(--accent), var(--good));transition:width .35s ease;}
+
+  /* ---------- Table ---------- */
+  .table-panel{padding:0;overflow:hidden;}
+  .table-header{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:22px 26px;border-bottom:1px solid var(--border);
+  }
+  .table-scroll{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:940px;}
+  thead th{
+    text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:0.06em;
+    color:var(--ink-soft);font-weight:700;padding:14px 20px;
+    background:var(--navy-100);border-bottom:1px solid var(--border);
+    position:sticky;top:0;cursor:pointer;user-select:none;
+  }
+  thead th:hover{color:var(--navy-900);}
+  thead th .arrow{opacity:0.4;font-size:10px;margin-left:4px;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+  tbody tr:hover{background:#fafbfe;}
+  tbody tr:last-child{border-bottom:none;}
+  td{padding:15px 20px;font-size:13.5px;vertical-align:top;}
+  td.job-title{font-weight:700;color:var(--navy-950);}
+  td.job-title a{color:inherit;text-decoration:none;}
+  td.job-title a:hover{color:var(--accent);text-decoration:underline;}
+  .company{color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
+  .pill{
+    display:inline-block;padding:4px 10px;border-radius:999px;
+    font-size:11.5px;font-weight:700;background:var(--accent-soft);color:var(--navy-800);
+  }
+  .pill.country{background:var(--good-soft);color:var(--good);}
+  .match-pill{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12.5px;}
+  .match-bar{width:46px;height:5px;border-radius:3px;background:var(--border);overflow:hidden;}
+  .match-bar span{display:block;height:100%;background:var(--good);}
+  .kw-tags{display:flex;flex-wrap:wrap;gap:5px;max-width:220px;}
+  .kw-tag{
+    background:var(--bg);border:1px solid var(--border);color:var(--ink-soft);
+    font-size:11px;padding:3px 8px;border-radius:6px;
+  }
+  .salary{font-weight:700;color:var(--navy-950);white-space:nowrap;}
+  .salary.muted{color:var(--ink-soft);font-weight:500;}
+  .posted{color:var(--ink-soft);white-space:nowrap;font-size:12.5px;}
+
+  .empty-state{padding:70px 20px;text-align:center;color:var(--ink-soft);}
+  .empty-state .icon{font-size:34px;margin-bottom:10px;}
+  .empty-state b{color:var(--navy-950);display:block;margin-bottom:6px;font-size:15px;}
+
+  footer{
+    margin-top:40px;text-align:center;color:var(--ink-soft);font-size:12.5px;
+    padding-top:20px;border-top:1px solid var(--border);
+  }
+  footer a{color:var(--navy-700);text-decoration:none;font-weight:600;}
+
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, th:focus-visible{
+    outline:2px solid var(--accent);outline-offset:2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .status-dot::after{animation:none;}
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 17L9 11L13 15L21 7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M15 7H21V13" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>Signal</h1>
+        <p>Your personal job‑intelligence dashboard</p>
+      </div>
+    </div>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      <span id="statusText">Last refreshed <b>just now</b></span>
+    </div>
+  </header>
+
+  <!-- DATA SOURCE -->
+  <section class="panel" id="sourcePanel">
+    <div class="panel-title"><span>Job data source</span><span class="line"></span></div>
+    <div class="source-toggle">
+      <button class="source-btn active" id="btnModeSample" type="button">📦 Sample data</button>
+      <button class="source-btn" id="btnModeLive" type="button">🌐 Live real jobs</button>
+    </div>
+    <p class="source-desc" id="sourceDesc">Practice mode with 20 example postings, so you can try everything safely first.</p>
+
+    <div class="live-setup" id="liveSetup" style="display:none;">
+      <div class="live-steps">
+        <ol>
+          <li>Go to <a href="https://developer.adzuna.com/" target="_blank" rel="noopener">developer.adzuna.com</a> and click <b>Register</b> — it's free, no card needed.</li>
+          <li>After you sign up, your account page shows an <b>Application ID</b> and an <b>Application Key</b>. Copy both.</li>
+          <li>Paste them into the two boxes below and click <b>Connect</b>. You get 1,000 free searches every month.</li>
+        </ol>
+      </div>
+      <div class="filter-grid two-col">
+        <div class="field">
+          <label for="adzunaId">Application ID</label>
+          <input type="text" id="adzunaId" placeholder="e.g. 3f9a1c22" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="adzunaKey">Application Key</label>
+          <input type="password" id="adzunaKey" placeholder="paste your key here" autocomplete="off">
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn-primary" id="btnConnect" type="button">🔗 Connect</button>
+        <span class="connect-status pending" id="connectStatus">Not connected yet</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTERS -->
+  <section class="panel">
+    <div class="panel-title"><span>Filters</span><span class="line"></span></div>
+
+    <div class="filter-grid">
+      <div class="field">
+        <label for="fKeyword">Job title / keywords</label>
+        <input type="text" id="fKeyword" placeholder="e.g. data analyst, react">
+      </div>
+      <div class="field">
+        <label for="fExperience">Minimum experience (years) <span class="hint" id="expHint"></span></label>
+        <input type="number" id="fExperience" min="0" max="30" placeholder="e.g. 2">
+      </div>
+      <div class="field">
+        <label for="fSalary">Minimum salary (annual)</label>
+        <input type="number" id="fSalary" min="0" step="1000" placeholder="e.g. 45000">
+      </div>
+      <div class="field">
+        <label for="fCountry">Country / region</label>
+        <select id="fCountry">
+          <option value="">All countries</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-primary" id="btnRefresh">
+        <span id="refreshIcon">↻</span> Refresh jobs
+      </button>
+      <button class="btn-ghost" id="btnReset">Reset filters</button>
+      <button class="btn-good" id="btnDownload">⬇ Download Excel report</button>
+      <div class="spacer"></div>
+      <span class="result-count"><b id="resultCount">0</b> jobs matching</span>
+    </div>
+
+    <div class="progress-track" id="progressTrack">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </section>
+
+  <!-- TABLE -->
+  <section class="panel table-panel">
+    <div class="table-header">
+      <div class="panel-title" style="margin-bottom:0;"><span>Active postings</span></div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th data-key="title">Role <span class="arrow">↕</span></th>
+            <th data-key="country">Country <span class="arrow">↕</span></th>
+            <th data-key="experience">Experience <span class="arrow">↕</span></th>
+            <th data-key="salary">Salary <span class="arrow">↕</span></th>
+            <th data-key="matchPercent">Match <span class="arrow">↕</span></th>
+            <th data-key="datePosted">Posted <span class="arrow">↕</span></th>
+            <th>Keywords</th>
+          </tr>
+        </thead>
+        <tbody id="jobsBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="icon">🔍</div>
+      <b>No jobs match these filters</b>
+      Try lowering the minimum experience or salary, clearing the keyword field, or clicking Refresh again.
+    </div>
+  </section>
+
+  <footer>
+    Built with Signal · Sample mode uses example data · Live mode pulls real postings from <a href="https://www.adzuna.com" target="_blank" rel="noopener">Adzuna</a>.
+    &nbsp;|&nbsp; <a href="#" id="scrollTop">Back to top</a>
+  </footer>
+
+</div>
+
+<script>
+/* ============================================================
+   SAMPLE JOB DATA (used in "Sample data" mode)
+   ============================================================ */
+const JOBS_DATA = [
+  { title:"Senior Frontend Engineer", company:"Booking.com", country:"Netherlands", experience:5, salary:78000, link:"https://example.com/job/1",
+    keywords:["react","typescript","css"], datePosted:"2026-07-14",
+    description:"We are looking for a Senior Frontend Engineer to own our booking flow UI, working closely with design and backend teams to ship fast, accessible interfaces used by millions of travellers.",
+    summary:"Lead the booking flow interface, partnering with design and backend to ship fast, accessible features at scale.",
+    recruiterName:"Marieke de Vries", recruiterEmail:"marieke.devries@bookingtalent.example" },
+  { title:"Data Analyst", company:"ASML", country:"Netherlands", experience:2, salary:52000, link:"https://example.com/job/2",
+    keywords:["sql","excel","powerbi"], datePosted:"2026-07-16",
+    description:"Join our operations analytics team to build dashboards and reports that guide manufacturing decisions across our semiconductor equipment lines.",
+    summary:"Build dashboards and reporting that inform manufacturing decisions for the equipment division.",
+    recruiterName:"Tom Bakker", recruiterEmail:"t.bakker@asmlrecruit.example" },
+  { title:"Product Manager", company:"Adyen", country:"Netherlands", experience:4, salary:85000, link:"https://example.com/job/3",
+    keywords:["roadmap","fintech","agile"], datePosted:"2026-07-10",
+    description:"Own the roadmap for a core payments product, working with engineering and merchants worldwide to define and ship new capabilities.",
+    summary:"Drive the roadmap for a core payments product in close collaboration with engineering and merchants.",
+    recruiterName:"Sanne Visser", recruiterEmail:"sanne.visser@adyenpeople.example" },
+  { title:"Backend Developer (Java)", company:"Philips", country:"Netherlands", experience:3, salary:65000, link:"https://example.com/job/4",
+    keywords:["java","spring","microservices"], datePosted:"2026-07-18",
+    description:"Build and maintain microservices powering our connected health devices, using Java and Spring in a cloud-native environment.",
+    summary:"Develop Java/Spring microservices behind our connected health device platform.",
+    recruiterName:"Lars Jansen", recruiterEmail:"lars.jansen@philipscareers.example" },
+  { title:"UX Designer", company:"Spotify", country:"Europe", experience:3, salary:58000, link:"https://example.com/job/5",
+    keywords:["figma","research","prototyping"], datePosted:"2026-07-12",
+    description:"Shape the listening experience for millions of users through research, prototyping, and close partnership with product teams.",
+    summary:"Shape core listening features through user research and rapid prototyping with product teams.",
+    recruiterName:"Elin Karlsson", recruiterEmail:"elin.karlsson@spotifytalent.example" },
+  { title:"DevOps Engineer", company:"SAP", country:"Europe", experience:4, salary:72000, link:"https://example.com/job/6",
+    keywords:["aws","kubernetes","ci/cd"], datePosted:"2026-07-15",
+    description:"Manage cloud infrastructure and CI/CD pipelines on AWS and Kubernetes for enterprise software delivery.",
+    summary:"Own AWS/Kubernetes infrastructure and CI/CD pipelines supporting enterprise product delivery.",
+    recruiterName:"Julia Hoffmann", recruiterEmail:"julia.hoffmann@saprecruit.example" },
+  { title:"Machine Learning Engineer", company:"Zalando", country:"Europe", experience:5, salary:90000, link:"https://example.com/job/7",
+    keywords:["python","pytorch","mlops"], datePosted:"2026-07-09",
+    description:"Build and deploy recommendation models in production, working across the ML lifecycle from experimentation to MLOps.",
+    summary:"Build and ship production recommendation models, covering experimentation through MLOps.",
+    recruiterName:"Nina Schulz", recruiterEmail:"nina.schulz@zalandojobs.example" },
+  { title:"Marketing Manager", company:"Unilever", country:"Europe", experience:6, salary:68000, link:"https://example.com/job/8",
+    keywords:["branding","digital","campaigns"], datePosted:"2026-07-11",
+    description:"Lead digital campaigns and brand strategy for a portfolio of consumer goods brands across European markets.",
+    summary:"Lead brand strategy and digital campaigns for consumer goods brands across Europe.",
+    recruiterName:"Claire Dubois", recruiterEmail:"claire.dubois@unileverpeople.example" },
+  { title:"Software Engineer", company:"Infosys", country:"India", experience:2, salary:14000, link:"https://example.com/job/9",
+    keywords:["java","spring","sql"], datePosted:"2026-07-17",
+    description:"Develop and maintain enterprise applications for global clients using Java, Spring, and relational databases.",
+    summary:"Build and maintain client-facing enterprise applications using Java, Spring, and SQL.",
+    recruiterName:"Priya Nair", recruiterEmail:"priya.nair@infosystalent.example" },
+  { title:"Data Scientist", company:"TCS", country:"India", experience:3, salary:18000, link:"https://example.com/job/10",
+    keywords:["python","ml","statistics"], datePosted:"2026-07-13",
+    description:"Apply statistical modelling and machine learning to solve business problems for enterprise clients across industries.",
+    summary:"Apply statistics and machine learning to solve enterprise client problems across industries.",
+    recruiterName:"Ankit Sharma", recruiterEmail:"ankit.sharma@tcsrecruit.example" },
+  { title:"HR Business Partner", company:"Wipro", country:"India", experience:5, salary:16000, link:"https://example.com/job/11",
+    keywords:["hr","recruitment","policy"], datePosted:"2026-07-08",
+    description:"Partner with business leaders on workforce planning, recruitment, and policy across a large technology organisation.",
+    summary:"Partner with leadership on workforce planning, hiring, and HR policy at a large tech firm.",
+    recruiterName:"Meera Iyer", recruiterEmail:"meera.iyer@wiprocareers.example" },
+  { title:"Cloud Architect", company:"Tech Mahindra", country:"India", experience:7, salary:26000, link:"https://example.com/job/12",
+    keywords:["azure","architecture","security"], datePosted:"2026-07-07",
+    description:"Design secure, scalable cloud architectures on Azure for enterprise clients migrating from on-premise systems.",
+    summary:"Design secure, scalable Azure architectures for enterprise cloud migrations.",
+    recruiterName:"Rahul Verma", recruiterEmail:"rahul.verma@techmrecruit.example" },
+  { title:"Finance Manager", company:"Emirates Group", country:"UAE", experience:6, salary:70000, link:"https://example.com/job/13",
+    keywords:["finance","budgeting","ifrs"], datePosted:"2026-07-16",
+    description:"Oversee budgeting and IFRS-compliant financial reporting for a division of a major regional airline group.",
+    summary:"Oversee budgeting and IFRS financial reporting for an airline group division.",
+    recruiterName:"Fatima Al Suwaidi", recruiterEmail:"fatima.alsuwaidi@emiratesjobs.example" },
+  { title:"Supply Chain Analyst", company:"DP World", country:"UAE", experience:3, salary:42000, link:"https://example.com/job/14",
+    keywords:["logistics","excel","forecasting"], datePosted:"2026-07-14",
+    description:"Analyse logistics and forecasting data to optimise port and freight operations across the region.",
+    summary:"Analyse logistics and demand data to optimise regional port and freight operations.",
+    recruiterName:"Omar Hassan", recruiterEmail:"omar.hassan@dpworldtalent.example" },
+  { title:"Full Stack Developer", company:"Careem", country:"UAE", experience:4, salary:55000, link:"https://example.com/job/15",
+    keywords:["node","react","mongodb"], datePosted:"2026-07-18",
+    description:"Build features end-to-end across our ride-hailing platform using Node.js, React, and MongoDB.",
+    summary:"Ship end-to-end features across the ride-hailing platform using Node.js, React, and MongoDB.",
+    recruiterName:"Layla Mansour", recruiterEmail:"layla.mansour@careemcareers.example" },
+  { title:"Business Analyst", company:"Etisalat", country:"UAE", experience:2, salary:38000, link:"https://example.com/job/16",
+    keywords:["requirements","sql","agile"], datePosted:"2026-07-10",
+    description:"Gather and document business requirements, working with agile teams to deliver telecom digital products.",
+    summary:"Gather requirements and work with agile teams to deliver telecom digital products.",
+    recruiterName:"Khalid Rashid", recruiterEmail:"khalid.rashid@etisalatjobs.example" },
+  { title:"Cybersecurity Analyst", company:"Deloitte", country:"United States", experience:4, salary:98000, link:"https://example.com/job/17",
+    keywords:["security","siem","compliance"], datePosted:"2026-07-15",
+    description:"Monitor and respond to security incidents using SIEM tooling while supporting client compliance audits.",
+    summary:"Monitor security incidents via SIEM tooling and support client compliance audits.",
+    recruiterName:"Rachel Kim", recruiterEmail:"rachel.kim@deloittetalent.example" },
+  { title:"Operations Manager", company:"Amazon", country:"United States", experience:5, salary:88000, link:"https://example.com/job/18",
+    keywords:["logistics","leadership","kpi"], datePosted:"2026-07-09",
+    description:"Lead a fulfilment centre team, driving throughput and safety KPIs across daily operations.",
+    summary:"Lead a fulfilment centre team, driving throughput and safety performance.",
+    recruiterName:"Daniel Brooks", recruiterEmail:"daniel.brooks@amazonhiring.example" },
+  { title:"QA Engineer", company:"Shopify", country:"Canada", experience:2, salary:60000, link:"https://example.com/job/19",
+    keywords:["automation","selenium","testing"], datePosted:"2026-07-12",
+    description:"Build automated test suites using Selenium to ensure quality across our e-commerce platform releases.",
+    summary:"Build Selenium-based automated test suites for e-commerce platform releases.",
+    recruiterName:"Emma Tremblay", recruiterEmail:"emma.tremblay@shopifyjobs.example" },
+  { title:"Graphic Designer", company:"Canva", country:"Australia", experience:1, salary:48000, link:"https://example.com/job/20",
+    keywords:["adobe","branding","illustration"], datePosted:"2026-07-17",
+    description:"Create branded visual assets and illustrations for marketing campaigns and in-product templates.",
+    summary:"Create branded visuals and illustrations for marketing campaigns and in-product templates.",
+    recruiterName:"Grace Wilson", recruiterEmail:"grace.wilson@canvatalent.example" }
+];
+
+/* Countries Adzuna's free API can search — code shown in the URL, name shown in the dropdown */
+const ADZUNA_COUNTRIES = {
+  gb:"United Kingdom", us:"United States", nl:"Netherlands", de:"Germany", fr:"France",
+  au:"Australia", at:"Austria", br:"Brazil", ca:"Canada", in:"India", it:"Italy",
+  mx:"Mexico", nz:"New Zealand", pl:"Poland", sg:"Singapore", za:"South Africa"
+};
+
+let dataMode = 'sample';       // 'sample' | 'live'
+let LIVE_JOBS_CACHE = [];      // holds the most recent real results from Adzuna
+let currentJobs = [];
+let sortState = { key: null, dir: 1 };
+
+const els = {
+  keyword: document.getElementById('fKeyword'),
+  experience: document.getElementById('fExperience'),
+  salary: document.getElementById('fSalary'),
+  country: document.getElementById('fCountry'),
+  body: document.getElementById('jobsBody'),
+  empty: document.getElementById('emptyState'),
+  count: document.getElementById('resultCount'),
+  status: document.getElementById('statusText'),
+  progressTrack: document.getElementById('progressTrack'),
+  progressFill: document.getElementById('progressFill'),
+  refreshIcon: document.getElementById('refreshIcon'),
+  downloadBtn: document.getElementById('btnDownload'),
+  expHint: document.getElementById('expHint'),
+};
+
+function populateSampleCountries(){
+  const countries = [...new Set(JOBS_DATA.map(j => j.country))].sort();
+  els.country.innerHTML = '<option value="">All countries</option>' +
+    countries.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function populateLiveCountries(){
+  els.country.innerHTML = Object.entries(ADZUNA_COUNTRIES)
+    .map(([code, name]) => `<option value="${code}">${name}</option>`).join('');
+  els.country.value = 'gb';
+}
+
+function formatSalary(n){
+  return '€' + n.toLocaleString('en-US');
+}
+
+function formatDate(iso){
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return '—';
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+/* Strip HTML tags out of text coming from a live job description */
+function stripHtml(html){
+  const div = document.createElement('div');
+  div.innerHTML = html || '';
+  return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+}
+
+function makeExcerpt(text, len){
+  const clean = stripHtml(text);
+  return clean.length > len ? clean.slice(0, len).trim() + '…' : clean;
+}
+
+/* Lightweight keyword extraction for live postings that don't come with tags already */
+const STOPWORDS = new Set(['the','and','for','with','you','are','this','that','from','will','have','has','our','your',
+  'job','role','team','work','experience','years','including','more','about','into','across','their','they','who',
+  'what','all','any','can','looking','ideal','strong','skills','using','used','use','also','other','well','than',
+  'within','where','when','high','were','being','able','apply','send']);
+function extractKeywords(text, max = 6){
+  const words = (text || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+    .filter(w => w.length > 3 && !STOPWORDS.has(w));
+  const freq = {};
+  words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+  return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, max).map(([w]) => w);
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ------------------------------------------------------------
+   % Match — scores each job against the current filter inputs.
+   40% keyword overlap · 20% experience fit · 20% salary fit · 20% country fit
+   With no filters set, every job defaults to a neutral 75% baseline.
+------------------------------------------------------------- */
+function computeMatchPercent(job){
+  const kw = els.keyword.value.trim().toLowerCase();
+  const minExp = parseFloat(els.experience.value);
+  const minSal = parseFloat(els.salary.value);
+  const country = dataMode === 'sample' ? els.country.value : '';
+
+  const noFiltersActive = !kw && isNaN(minExp) && isNaN(minSal) && !country;
+  if (noFiltersActive) return 75;
+
+  let score = 0;
+
+  if (kw){
+    const terms = kw.split(/\s+/).filter(Boolean);
+    const haystack = (job.title + ' ' + job.keywords.join(' ') + ' ' + (job.description || '')).toLowerCase();
+    const hits = terms.filter(t => haystack.includes(t)).length;
+    score += terms.length ? (hits / terms.length) * 40 : 40;
+  } else {
+    score += 30;
+  }
+
+  if (!isNaN(minExp) && job.experience !== null && job.experience !== undefined){
+    score += job.experience >= minExp ? 20 : Math.max(0, 20 - (minExp - job.experience) * 6);
+  } else {
+    score += 15;
+  }
+
+  if (!isNaN(minSal) && minSal > 0 && job.salary){
+    score += job.salary >= minSal ? 20 : Math.max(0, 20 * (job.salary / minSal));
+  } else {
+    score += 15;
+  }
+
+  if (country){
+    score += job.country === country ? 20 : 0;
+  } else {
+    score += 15;
+  }
+
+  return Math.round(Math.min(100, score));
+}
+
+function applyFilters(){
+  const kw = els.keyword.value.trim().toLowerCase();
+  const minExp = parseFloat(els.experience.value) || 0;
+  const minSal = parseFloat(els.salary.value) || 0;
+  const country = els.country.value;
+  const sourceJobs = dataMode === 'live' ? LIVE_JOBS_CACHE : JOBS_DATA;
+
+  currentJobs = sourceJobs
+    .filter(j => {
+      const matchesKw = !kw || j.title.toLowerCase().includes(kw) ||
+        j.keywords.some(k => k.toLowerCase().includes(kw)) ||
+        (j.description || '').toLowerCase().includes(kw);
+      const matchesExp = (j.experience === null || j.experience === undefined) ? true : j.experience >= minExp;
+      const matchesSal = j.salary ? j.salary >= minSal : minSal === 0;
+      const matchesCountry = (!country || dataMode === 'live') ? true : j.country === country;
+      return matchesKw && matchesExp && matchesSal && matchesCountry;
+    })
+    .map(j => ({ ...j, matchPercent: computeMatchPercent(j) }));
+
+  if (sortState.key) sortJobs(sortState.key, false);
+  render();
+}
+
+function sortJobs(key, toggle = true){
+  if (toggle){
+    sortState.dir = (sortState.key === key) ? sortState.dir * -1 : 1;
+  }
+  sortState.key = key;
+  currentJobs.sort((a, b) => {
+    let av = a[key], bv = b[key];
+    if (av === null || av === undefined) av = '';
+    if (bv === null || bv === undefined) bv = '';
+    if (typeof av === 'string'){ av = av.toLowerCase(); bv = bv.toLowerCase(); }
+    if (av < bv) return -1 * sortState.dir;
+    if (av > bv) return 1 * sortState.dir;
+    return 0;
+  });
+  render();
+}
+
+function render(){
+  els.count.textContent = currentJobs.length;
+
+  if (currentJobs.length === 0){
+    els.body.innerHTML = '';
+    els.empty.style.display = 'block';
+    return;
+  }
+  els.empty.style.display = 'none';
+
+  els.body.innerHTML = currentJobs.map(j => `
+    <tr>
+      <td class="job-title">
+        <a href="${j.link}" target="_blank" rel="noopener">${escapeHtml(j.title)}</a>
+        <div class="company">${escapeHtml(j.company)}</div>
+      </td>
+      <td><span class="pill country">${escapeHtml(j.country)}</span></td>
+      <td>${(j.experience === null || j.experience === undefined) ? '—' : j.experience + '+ yrs'}</td>
+      <td class="salary ${j.salary ? '' : 'muted'}">${j.salary ? formatSalary(j.salary) : 'Not listed'}</td>
+      <td>
+        <div class="match-pill">
+          ${j.matchPercent}%
+          <span class="match-bar"><span style="width:${j.matchPercent}%"></span></span>
+        </div>
+      </td>
+      <td class="posted">${formatDate(j.datePosted)}</td>
+      <td><div class="kw-tags">${j.keywords.map(k => `<span class="kw-tag">${escapeHtml(k)}</span>`).join('')}</div></td>
+    </tr>
+  `).join('');
+}
+
+/* ------------------------------------------------------------
+   LIVE MODE — fetches real postings from Adzuna's free API
+------------------------------------------------------------- */
+async function fetchLiveJobs(){
+  const appId = localStorage.getItem('signal_adzuna_id');
+  const appKey = localStorage.getItem('signal_adzuna_key');
+  if (!appId || !appKey){
+    throw new Error("Please connect your free Adzuna account first, in the \"Job data source\" panel above.");
+  }
+
+  const country = els.country.value || 'gb';
+  const kw = els.keyword.value.trim();
+  const minSal = parseFloat(els.salary.value) || 0;
+
+  const params = new URLSearchParams({
+    app_id: appId,
+    app_key: appKey,
+    results_per_page: '25',
+    'content-type': 'application/json'
+  });
+  if (kw) params.set('what', kw);
+  if (minSal) params.set('salary_min', String(minSal));
+
+  const directUrl = `https://api.adzuna.com/v1/api/jobs/${country}/search/1?${params.toString()}`;
+  /* Adzuna's API isn't built to be called straight from a browser tab (no CORS
+     permission), so we route the request through a free public relay that adds
+     the missing permission header. Your keys still only ever go to Adzuna itself. */
+  const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`;
+
+  let res;
+  try{
+    res = await fetch(directUrl);
+  } catch (directErr){
+    try{
+      res = await fetch(proxiedUrl);
+    } catch (proxyErr){
+      throw new Error('Could not reach the job search service right now. Please check your internet connection and try again in a moment.');
+    }
+  }
+
+  if (!res.ok){
+    if (res.status === 401 || res.status === 403){
+      throw new Error('Your Adzuna Application ID or Key looks incorrect. Please re-check them in the panel above.');
+    }
+    throw new Error(`The job search service returned an error (status ${res.status}). Please try again in a moment.`);
+  }
+
+  const data = await res.json();
+  return (data.results || []).map(r => {
+    const salMin = r.salary_min, salMax = r.salary_max;
+    const salary = (salMin && salMax) ? Math.round((salMin + salMax) / 2) : (salMin || salMax || null);
+    const desc = r.description || '';
+    return {
+      title: stripHtml(r.title) || 'Untitled role',
+      company: (r.company && r.company.display_name) || 'Not specified',
+      country: ADZUNA_COUNTRIES[country] || country.toUpperCase(),
+      experience: null,
+      salary: salary,
+      link: r.redirect_url || '#',
+      keywords: extractKeywords(desc || r.title, 6),
+      datePosted: (r.created || '').slice(0, 10),
+      description: stripHtml(desc) || 'No description provided by the source listing.',
+      summary: makeExcerpt(desc, 180) || 'No description provided by the source listing.',
+      recruiterName: 'Not published by source',
+      recruiterEmail: 'Not published by source'
+    };
+  });
+}
+
+async function refreshJobs(){
+  const btn = document.getElementById('btnRefresh');
+  btn.disabled = true;
+  els.refreshIcon.style.animation = 'spin 0.8s linear infinite';
+  els.progressTrack.classList.add('show');
+  els.progressFill.style.width = '15%';
+
+  try{
+    if (dataMode === 'live'){
+      els.progressFill.style.width = '45%';
+      LIVE_JOBS_CACHE = await fetchLiveJobs();
+      els.progressFill.style.width = '85%';
+    }
+    applyFilters();
+    els.progressFill.style.width = '100%';
+    els.status.innerHTML = 'Last refreshed <b>just now</b>' + (dataMode === 'live' ? ' · live data' : '');
+  } catch (err){
+    console.error(err);
+    alert(err.message || 'Something went wrong while refreshing jobs.');
+  } finally {
+    setTimeout(() => {
+      btn.disabled = false;
+      els.refreshIcon.style.animation = '';
+      els.progressTrack.classList.remove('show');
+    }, 300);
+  }
+}
+
+function resetFilters(){
+  els.keyword.value = '';
+  els.experience.value = '';
+  els.salary.value = '';
+  if (dataMode === 'sample'){
+    els.country.value = '';
+  }
+  sortState = { key: null, dir: 1 };
+  applyFilters();
+}
+
+/* ------------------------------------------------------------
+   DATA SOURCE SWITCHING
+------------------------------------------------------------- */
+function setDataMode(mode){
+  dataMode = mode;
+  document.getElementById('btnModeSample').classList.toggle('active', mode === 'sample');
+  document.getElementById('btnModeLive').classList.toggle('active', mode === 'live');
+  document.getElementById('liveSetup').style.display = mode === 'live' ? 'block' : 'none';
+  document.getElementById('sourceDesc').textContent = mode === 'sample'
+    ? 'Practice mode with 20 example postings, so you can try everything safely first.'
+    : "Pulls real, current postings from Adzuna's job search engine whenever you click Refresh.";
+
+  if (mode === 'live'){
+    populateLiveCountries();
+    els.experience.disabled = true;
+    els.experience.value = '';
+    els.expHint.textContent = '(not available for live jobs)';
+
+    const savedId = localStorage.getItem('signal_adzuna_id');
+    const savedKey = localStorage.getItem('signal_adzuna_key');
+    if (savedId) document.getElementById('adzunaId').value = savedId;
+    if (savedKey) document.getElementById('adzunaKey').value = savedKey;
+    if (savedId && savedKey){
+      setConnectStatus(true);
+      refreshJobs();
+    } else {
+      setConnectStatus(false);
+      currentJobs = [];
+      render();
+    }
+  } else {
+    populateSampleCountries();
+    els.experience.disabled = false;
+    els.expHint.textContent = '';
+    LIVE_JOBS_CACHE = [];
+    applyFilters();
+  }
+}
+
+function setConnectStatus(connected){
+  const el = document.getElementById('connectStatus');
+  if (connected){
+    el.textContent = '✓ Connected — click Refresh to pull real jobs';
+    el.className = 'connect-status ok';
+  } else {
+    el.textContent = 'Not connected yet';
+    el.className = 'connect-status pending';
+  }
+}
+
+function connectAdzuna(){
+  const id = document.getElementById('adzunaId').value.trim();
+  const key = document.getElementById('adzunaKey').value.trim();
+  if (!id || !key){
+    alert('Please paste both your Application ID and Application Key.');
+    return;
+  }
+  localStorage.setItem('signal_adzuna_id', id);
+  localStorage.setItem('signal_adzuna_key', key);
+  setConnectStatus(true);
+  refreshJobs();
+}
+
+/* ============================================================
+   PROFESSIONAL EXCEL EXPORT (ExcelJS — runs in the browser)
+   Columns: SL. NO, Job Title, Job Description, Summary (Paraphrased),
+   Company Name, Link to Full JD, Recruiter/HR Name, Recruiter/HR Email,
+   Date of Posting, % Match, Salary, Keywords Extracted from JD
+   ============================================================ */
+async function downloadExcel(){
+  if (currentJobs.length === 0){
+    alert('No jobs to export — adjust your filters first.');
+    return;
+  }
+  els.downloadBtn.disabled = true;
+  const originalLabel = els.downloadBtn.innerHTML;
+  els.downloadBtn.innerHTML = '⏳ Building report…';
+
+  try{
+    const NAVY = 'FF0E2140';
+    const NAVY_DARK = 'FF0A1830';
+    const LIGHT_BAND = 'FFF3F6FC';
+    const WHITE = 'FFFFFFFF';
+    const BORDER = 'FFD9E1EE';
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Signal — Personal Job Intelligence';
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet('Job Matches', {
+      views: [{ state: 'frozen', ySplit: 4, showGridLines: false }]
+    });
+
+    const columns = [
+      { header: 'SL. NO', width: 8 },
+      { header: 'Job Title', width: 28 },
+      { header: 'Job Description', width: 46 },
+      { header: 'Summary (Paraphrased)', width: 38 },
+      { header: 'Company Name', width: 20 },
+      { header: 'Link to Full JD', width: 30 },
+      { header: 'Recruiter / HR Name', width: 20 },
+      { header: 'Recruiter / HR Email', width: 28 },
+      { header: 'Date of Posting', width: 16 },
+      { header: '% Match', width: 11 },
+      { header: 'Salary', width: 14 },
+      { header: 'Keywords Extracted from JD', width: 32 }
+    ];
+    sheet.columns = columns.map(c => ({ width: c.width }));
+
+    sheet.mergeCells(1, 1, 1, columns.length);
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = 'Signal — Personal Job Intelligence Report';
+    titleCell.font = { name: 'Calibri', size: 16, bold: true, color: { argb: WHITE } };
+    titleCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+    sheet.getRow(1).height = 30;
+    sheet.getRow(1).eachCell(c => { c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:NAVY_DARK} }; });
+
+    sheet.mergeCells(2, 1, 2, columns.length);
+    const subCell = sheet.getCell('A2');
+    const now = new Date();
+    const sourceLabel = dataMode === 'live' ? 'Live data (Adzuna)' : 'Sample data';
+    subCell.value = `Generated ${now.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}  ·  ${currentJobs.length} matching role${currentJobs.length===1?'':'s'}  ·  Source: ${sourceLabel}`;
+    subCell.font = { name: 'Calibri', size: 10.5, italic: true, color: { argb: 'FF5B6A85' } };
+    subCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+    sheet.getRow(2).height = 20;
+    sheet.getRow(2).eachCell(c => { c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFE7EDF7'} }; });
+
+    sheet.getRow(3).height = 6;
+
+    const headerRow = sheet.getRow(4);
+    columns.forEach((c, i) => { headerRow.getCell(i + 1).value = c.header; });
+    headerRow.height = 24;
+    headerRow.eachCell(cell => {
+      cell.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: WHITE } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } };
+      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      cell.border = {
+        top: { style: 'thin', color: { argb: BORDER } },
+        bottom: { style: 'thin', color: { argb: BORDER } },
+        left: { style: 'thin', color: { argb: BORDER } },
+        right: { style: 'thin', color: { argb: BORDER } }
+      };
+    });
+
+    currentJobs.forEach((job, idx) => {
+      const rowIndex = 5 + idx;
+      const row = sheet.getRow(rowIndex);
+      row.values = [
+        idx + 1,
+        job.title,
+        job.description,
+        job.summary,
+        job.company,
+        job.link,
+        job.recruiterName,
+        job.recruiterEmail,
+        job.datePosted ? new Date(job.datePosted + 'T00:00:00') : null,
+        job.matchPercent / 100,
+        job.salary || null,
+        job.keywords.join(', ')
+      ];
+
+      const isBand = idx % 2 === 1;
+      row.eachCell((cell, colNumber) => {
+        cell.font = { name: 'Calibri', size: 10.5, color: { argb: 'FF152238' } };
+        cell.alignment = { vertical: 'top', horizontal: colNumber === 1 || colNumber === 10 ? 'center' : 'left', wrapText: [3,4,12].includes(colNumber) };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isBand ? LIGHT_BAND : WHITE } };
+        cell.border = {
+          top: { style: 'hair', color: { argb: BORDER } },
+          bottom: { style: 'hair', color: { argb: BORDER } },
+          left: { style: 'hair', color: { argb: BORDER } },
+          right: { style: 'hair', color: { argb: BORDER } }
+        };
+      });
+
+      row.getCell(2).font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: NAVY_DARK } };
+
+      const linkCell = row.getCell(6);
+      linkCell.value = { text: job.link, hyperlink: job.link };
+      linkCell.font = { name: 'Calibri', size: 10.5, color: { argb: 'FF2F6FED' }, underline: true };
+
+      row.getCell(9).numFmt = 'dd-mmm-yyyy';
+      row.getCell(9).alignment = { vertical: 'top', horizontal: 'center' };
+
+      row.getCell(10).numFmt = '0%';
+      row.getCell(10).font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: NAVY_DARK } };
+
+      row.getCell(11).numFmt = '€#,##0';
+      row.getCell(11).alignment = { vertical: 'top', horizontal: 'right' };
+
+      row.height = 46;
+    });
+
+    const lastRow = 4 + currentJobs.length;
+
+    sheet.autoFilter = { from: { row: 4, column: 1 }, to: { row: lastRow, column: columns.length } };
+
+    sheet.addConditionalFormatting({
+      ref: `J5:J${lastRow}`,
+      rules: [{
+        type: 'colorScale',
+        cfvo: [{ type: 'min' }, { type: 'percentile', value: 50 }, { type: 'max' }],
+        color: [{ argb: 'FFF4B7B0' }, { argb: 'FFFCE9A8' }, { argb: 'FFA9DDBE' }]
+      }]
+    });
+
+    sheet.getRow(1).eachCell(c => { c.border = { bottom: { style:'medium', color:{argb:NAVY_DARK} } }; });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `signal-job-report-${dateStr}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err){
+    console.error(err);
+    alert('Something went wrong building the Excel file. Please try again.');
+  } finally {
+    els.downloadBtn.disabled = false;
+    els.downloadBtn.innerHTML = originalLabel;
+  }
+}
+
+/* wire up events */
+document.getElementById('btnRefresh').addEventListener('click', refreshJobs);
+document.getElementById('btnReset').addEventListener('click', resetFilters);
+document.getElementById('btnModeSample').addEventListener('click', () => setDataMode('sample'));
+document.getElementById('btnModeLive').addEventListener('click', () => setDataMode('live'));
+document.getElementById('btnConnect').addEventListener('click', connectAdzuna);
+els.downloadBtn.addEventListener('click', downloadExcel);
+[els.keyword, els.experience, els.salary, els.country].forEach(el => {
+  el.addEventListener('input', () => { if (dataMode === 'sample') applyFilters(); });
+  el.addEventListener('change', () => { if (dataMode === 'sample') applyFilters(); });
+});
+document.querySelectorAll('thead th[data-key]').forEach(th => {
+  th.addEventListener('click', () => sortJobs(th.dataset.key));
+});
+document.getElementById('scrollTop').addEventListener('click', (e) => {
+  e.preventDefault();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+const styleTag = document.createElement('style');
+styleTag.textContent = '@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}';
+document.head.appendChild(styleTag);
+
+/* init */
+populateSampleCountries();
+applyFilters();
+</script>
+</body>
+</html>
