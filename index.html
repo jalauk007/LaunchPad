@@ -13,7 +13,15 @@
     --warn:#c98a1a; --warn-soft:#fbf1de; --bad:#c94f4f; --bad-soft:#fbeaea;
     --radius-lg:18px; --radius-md:12px; --radius-sm:8px;
     --shadow:0 10px 30px -12px rgba(14,33,64,0.18); --shadow-sm:0 2px 8px -2px rgba(14,33,64,0.12);
+    --brand-1:#14315c; --brand-2:#0a1830; --brand-2-hover:#1c4278; --fg-on-dark:#ffffff;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  :root[data-theme="dark"]{
+    --navy-950:#f1f5fc; --navy-900:#dbe4f4; --navy-800:#aebfe0; --navy-700:#94a9d6; --navy-100:#16233f;
+    --bg:#0a1120; --white:#111b32; --ink:#e6ecf9; --ink-soft:#93a3c4; --border:#25355a;
+    --accent:#5b8dfd; --accent-soft:#152a52; --good:#3fd095; --good-soft:#0f2e24;
+    --warn:#e7bb5c; --warn-soft:#3a2c10; --bad:#f47f7f; --bad-soft:#3a1620;
+    --shadow:0 10px 30px -12px rgba(0,0,0,0.6); --shadow-sm:0 2px 8px -2px rgba(0,0,0,0.5);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
@@ -24,11 +32,14 @@
 
   header.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:22px;}
   .brand{display:flex;align-items:center;gap:14px;}
-  .brand-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(155deg, var(--navy-800), var(--navy-950));display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);flex-shrink:0;}
+  .brand-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(155deg, var(--brand-1), var(--brand-2));display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);flex-shrink:0;}
   .brand-mark svg{width:22px;height:22px;}
   .brand-text h1{font-size:26px;letter-spacing:-0.02em;margin:0;font-weight:800;color:var(--navy-950);}
   .brand-text p{margin:2px 0 0;color:var(--ink-soft);font-size:14px;}
   .header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .icon-toggle{background:var(--white);color:var(--ink-soft);border:1.5px solid var(--border);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:var(--shadow-sm);transition:background .15s,color .15s,border-color .15s;}
+  .icon-toggle:hover{border-color:var(--accent);}
+  .icon-toggle.active{background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent);}
   .status-badge{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--border);padding:9px 16px;border-radius:999px;box-shadow:var(--shadow-sm);font-size:13px;color:var(--ink-soft);}
   .status-dot{width:8px;height:8px;border-radius:50%;background:var(--good);position:relative;flex-shrink:0;}
   .status-dot.off{background:var(--warn);}
@@ -64,11 +75,11 @@
   .action-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
   button{font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:var(--radius-sm);padding:12px 20px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .1s, box-shadow .15s, background .15s;}
   button:active{transform:translateY(1px);}
-  .btn-primary{background:var(--navy-950);color:var(--white);box-shadow:var(--shadow-sm);}
-  .btn-primary:hover{background:var(--navy-800);}
+  .btn-primary{background:var(--brand-2);color:var(--fg-on-dark);box-shadow:var(--shadow-sm);}
+  .btn-primary:hover{background:var(--brand-2-hover);}
   .btn-ghost{background:var(--white);color:var(--navy-900);border:1.5px solid var(--border);}
   .btn-ghost:hover{border-color:var(--navy-700);}
-  .btn-good{background:var(--good);color:var(--white);}
+  .btn-good{background:var(--good);color:var(--fg-on-dark);}
   .btn-good:hover{background:#188457;}
   .btn-bad{background:var(--bad-soft);color:var(--bad);}
   .btn-bad:hover{background:#f6d9d9;}
@@ -127,7 +138,7 @@
 
   .conn-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
   .conn-card{display:flex;align-items:center;gap:16px;border:1.5px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;background:var(--bg);}
-  .conn-icon{width:38px;height:38px;border-radius:10px;background:var(--navy-950);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;}
+  .conn-icon{width:38px;height:38px;border-radius:10px;background:var(--brand-2);color:var(--fg-on-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;}
   .conn-main{flex:1;min-width:0;}
   .conn-title{font-weight:700;color:var(--navy-950);font-size:14.5px;}
   .conn-sub{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
@@ -143,7 +154,7 @@
   .modal .field{margin-bottom:16px;}
   .provider-toggle{display:flex;gap:10px;margin-bottom:18px;}
   .provider-btn{flex:1;background:var(--bg);color:var(--ink-soft);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:13.5px;font-weight:700;cursor:pointer;text-align:center;}
-  .provider-btn.active{background:var(--navy-950);color:var(--white);border-color:var(--navy-950);}
+  .provider-btn.active{background:var(--brand-2);color:var(--fg-on-dark);border-color:var(--brand-2);}
   .advanced-toggle{font-size:12.5px;color:var(--accent);font-weight:700;cursor:pointer;margin:4px 0 14px;user-select:none;}
   .advanced-fields{display:none;border-top:1px dashed var(--border);padding-top:14px;margin-top:2px;}
   .advanced-fields.show{display:block;}
@@ -197,6 +208,12 @@
       </div>
     </div>
     <div class="header-right">
+      <button class="icon-toggle" id="btnTranslateToggle" type="button" aria-pressed="false" title="Translate job postings to English">
+        <span>🌐</span> English
+      </button>
+      <button class="icon-toggle" id="btnThemeToggle" type="button" title="Switch theme">
+        <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
+      </button>
       <div class="status-badge">
         <span class="status-dot" id="statusDot"></span>
         <span id="statusText">No API connections yet</span>
@@ -469,6 +486,10 @@ const els = {
   paginationInfo: document.getElementById('paginationInfo'),
   btnPrevPage: document.getElementById('btnPrevPage'),
   btnNextPage: document.getElementById('btnNextPage'),
+  btnTranslateToggle: document.getElementById('btnTranslateToggle'),
+  btnThemeToggle: document.getElementById('btnThemeToggle'),
+  themeIcon: document.getElementById('themeIcon'),
+  themeLabel: document.getElementById('themeLabel'),
 };
 
 const STORAGE_KEY = 'launchpad_connections';
@@ -1070,6 +1091,103 @@ function sortVisible(){
   render();
 }
 
+/* ---------------- Theme (light/dark) ---------------- */
+const THEME_KEY = 'launchpad_theme';
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  els.themeIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
+  els.themeLabel.textContent = theme === 'dark' ? 'Dark' : 'Light';
+  els.btnThemeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+}
+function initTheme(){
+  let theme = 'light';
+  try{
+    theme = localStorage.getItem(THEME_KEY) ||
+      (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  } catch(e){}
+  applyTheme(theme);
+}
+function toggleTheme(){
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try{ localStorage.setItem(THEME_KEY, next); } catch(e){}
+}
+
+/* ---------------- Translate to English ---------------- */
+const TRANSLATE_KEY = 'launchpad_translate';
+let translateEnabled = false;
+const translationCache = new Map();
+
+function translationKey(job){ return job.link || (job.title + '::' + job.company); }
+
+function setTranslateUI(){
+  els.btnTranslateToggle.classList.toggle('active', translateEnabled);
+  els.btnTranslateToggle.setAttribute('aria-pressed', translateEnabled ? 'true' : 'false');
+}
+
+function initTranslate(){
+  try{ translateEnabled = localStorage.getItem(TRANSLATE_KEY) === '1'; } catch(e){ translateEnabled = false; }
+  setTranslateUI();
+}
+
+function toggleTranslate(){
+  translateEnabled = !translateEnabled;
+  try{ localStorage.setItem(TRANSLATE_KEY, translateEnabled ? '1' : '0'); } catch(e){}
+  setTranslateUI();
+  render();
+}
+
+async function translateText(text){
+  if (!text || !text.trim()) return text;
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+  try{
+    let res;
+    try{
+      res = await fetch(url);
+      if (!res.ok) throw new Error('bad status');
+    } catch(e){
+      const proxied = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      res = await fetch(proxied);
+    }
+    const data = await res.json();
+    const translated = (data[0] || []).map(seg => seg[0]).join('');
+    return translated || text;
+  } catch(e){
+    console.error('Translation failed, showing original text', e);
+    return text;
+  }
+}
+
+async function translateJob(job){
+  const key = translationKey(job);
+  if (translationCache.has(key)) return translationCache.get(key);
+  const combined = [job.title, job.summary || '', job.keywords.join(' | ')].join('\n');
+  let translatedCombined;
+  try{
+    translatedCombined = await translateText(combined);
+  } catch(e){
+    translatedCombined = combined;
+  }
+  const parts = translatedCombined.split('\n');
+  const translatedKeywords = (parts[2] || job.keywords.join(' | ')).split('|').map(s => s.trim()).filter(Boolean);
+  const translated = {
+    ...job,
+    title: parts[0] || job.title,
+    summary: parts[1] || job.summary,
+    keywords: translatedKeywords.length ? translatedKeywords : job.keywords
+  };
+  translationCache.set(key, translated);
+  return translated;
+}
+
+async function translatePageIfNeeded(pageItems){
+  const needing = pageItems.filter(j => !translationCache.has(translationKey(j)));
+  if (needing.length === 0) return;
+  await Promise.all(needing.map(j => translateJob(j).catch(() => {})));
+  if (translateEnabled) render();
+}
+
 function render(){
   els.count.textContent = visibleJobs.length;
 
@@ -1104,8 +1222,9 @@ function render(){
   if (currentPage < 1) currentPage = 1;
   const start = (currentPage - 1) * PAGE_SIZE;
   const pageItems = visibleJobs.slice(start, start + PAGE_SIZE);
+  const displayItems = translateEnabled ? pageItems.map(j => translationCache.get(translationKey(j)) || j) : pageItems;
 
-  els.body.innerHTML = pageItems.map(j => `
+  els.body.innerHTML = displayItems.map(j => `
     <tr>
       <td class="job-title">
         <a href="${j.link}" target="_blank" rel="noopener">${escapeHtml(j.title)}</a>
@@ -1124,6 +1243,8 @@ function render(){
       <td><div class="kw-tags">${j.keywords.map(k => `<span class="kw-tag">${escapeHtml(k)}</span>`).join('')}</div></td>
     </tr>
   `).join('');
+
+  if (translateEnabled) translatePageIfNeeded(pageItems);
 
   if (totalPages > 1){
     els.paginationBar.style.display = 'flex';
@@ -1165,6 +1286,17 @@ async function downloadExcel(){
   els.downloadBtn.disabled = true;
   const originalLabel = els.downloadBtn.innerHTML;
   els.downloadBtn.innerHTML = '⏳ Building report…';
+
+  let exportJobs = visibleJobs;
+  if (translateEnabled){
+    els.downloadBtn.innerHTML = '⏳ Translating…';
+    try{
+      exportJobs = await Promise.all(visibleJobs.map(j => translateJob(j).catch(() => j)));
+    } catch(e){
+      exportJobs = visibleJobs;
+    }
+    els.downloadBtn.innerHTML = '⏳ Building report…';
+  }
 
   try{
     const NAVY = 'FF0E2140';
@@ -1209,7 +1341,7 @@ async function downloadExcel(){
     sheet.mergeCells(2, 1, 2, columns.length);
     const subCell = sheet.getCell('A2');
     const now = new Date();
-    subCell.value = `Generated ${now.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}  ·  ${visibleJobs.length} matching role${visibleJobs.length===1?'':'s'}  ·  ${connections.length} source${connections.length===1?'':'s'}`;
+    subCell.value = `Generated ${now.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}  ·  ${exportJobs.length} matching role${exportJobs.length===1?'':'s'}  ·  ${connections.length} source${connections.length===1?'':'s'}`;
     subCell.font = { name: 'Calibri', size: 10.5, italic: true, color: { argb: 'FF5B6A85' } };
     subCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
     sheet.getRow(2).height = 20;
@@ -1230,7 +1362,7 @@ async function downloadExcel(){
       };
     });
 
-    visibleJobs.forEach((job, idx) => {
+    exportJobs.forEach((job, idx) => {
       const rowIndex = 5 + idx;
       const row = sheet.getRow(rowIndex);
       row.values = [
@@ -1269,7 +1401,7 @@ async function downloadExcel(){
       row.height = 46;
     });
 
-    const lastRow = 4 + visibleJobs.length;
+    const lastRow = 4 + exportJobs.length;
     sheet.autoFilter = { from: { row: 4, column: 1 }, to: { row: lastRow, column: columns.length } };
     sheet.addConditionalFormatting({
       ref: `K5:K${lastRow}`,
@@ -1307,6 +1439,8 @@ document.getElementById('tabSettings').addEventListener('click', () => switchVie
 document.getElementById('btnRefresh').addEventListener('click', refreshJobs);
 document.getElementById('btnReset').addEventListener('click', resetFilters);
 els.btnPrevPage.addEventListener('click', () => goToPage(-1));
+els.btnThemeToggle.addEventListener('click', toggleTheme);
+els.btnTranslateToggle.addEventListener('click', toggleTranslate);
 els.btnNextPage.addEventListener('click', () => goToPage(1));
 els.downloadBtn.addEventListener('click', downloadExcel);
 [els.keyword, els.experience, els.salary].forEach(el => {
@@ -1329,6 +1463,8 @@ modalEls.advancedToggle.addEventListener('click', () => modalEls.advancedFields.
 modalEls.backdrop.addEventListener('click', (e) => { if (e.target === modalEls.backdrop) closeModal(); });
 
 async function init(){
+  initTheme();
+  initTranslate();
   populateModalCountrySelect();
   await loadConnections();
   renderConnections();
