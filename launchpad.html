@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaunchPad — Personal Job Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+  :root{
+    --navy-950:#0a1830; --navy-900:#0e2140; --navy-800:#14315c; --navy-700:#1c4278; --navy-100:#e7edf7;
+    --bg:#f5f7fb; --white:#ffffff; --ink:#152238; --ink-soft:#5b6a85; --border:#e1e7f2;
+    --accent:#2f6fed; --accent-soft:#eaf1ff; --good:#1f9d6c; --good-soft:#e8f8f1;
+    --warn:#c98a1a; --warn-soft:#fbf1de; --bad:#c94f4f; --bad-soft:#fbeaea;
+    --radius-lg:18px; --radius-md:12px; --radius-sm:8px;
+    --shadow:0 10px 30px -12px rgba(14,33,64,0.18); --shadow-sm:0 2px 8px -2px rgba(14,33,64,0.12);
+    --brand-1:#14315c; --brand-2:#0a1830; --brand-2-hover:#1c4278; --fg-on-dark:#ffffff;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  :root[data-theme="dark"]{
+    --navy-950:#f1f5fc; --navy-900:#dbe4f4; --navy-800:#aebfe0; --navy-700:#94a9d6; --navy-100:#16233f;
+    --bg:#0a1120; --white:#111b32; --ink:#e6ecf9; --ink-soft:#93a3c4; --border:#25355a;
+    --accent:#5b8dfd; --accent-soft:#152a52; --good:#3fd095; --good-soft:#0f2e24;
+    --warn:#e7bb5c; --warn-soft:#3a2c10; --bad:#f47f7f; --bad-soft:#3a1620;
+    --shadow:0 10px 30px -12px rgba(0,0,0,0.6); --shadow-sm:0 2px 8px -2px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+  body{-webkit-font-smoothing:antialiased;
+    background-image:linear-gradient(rgba(14,33,64,0.035) 1px, transparent 1px),linear-gradient(90deg, rgba(14,33,64,0.035) 1px, transparent 1px);
+    background-size:34px 34px; background-attachment:fixed;}
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 24px 80px;}
+
+  header.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:22px;}
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(155deg, var(--brand-1), var(--brand-2));display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);flex-shrink:0;}
+  .brand-mark svg{width:22px;height:22px;}
+  .brand-text h1{font-size:26px;letter-spacing:-0.02em;margin:0;font-weight:800;color:var(--navy-950);}
+  .brand-text p{margin:2px 0 0;color:var(--ink-soft);font-size:14px;}
+  .header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .icon-toggle{background:var(--white);color:var(--ink-soft);border:1.5px solid var(--border);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:var(--shadow-sm);transition:background .15s,color .15s,border-color .15s;}
+  .icon-toggle:hover{border-color:var(--accent);}
+  .icon-toggle.active{background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent);}
+  .status-badge{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--border);padding:9px 16px;border-radius:999px;box-shadow:var(--shadow-sm);font-size:13px;color:var(--ink-soft);}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--good);position:relative;flex-shrink:0;}
+  .status-dot.off{background:var(--warn);}
+  .status-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--good);opacity:0.5;animation:pulse 2.2s ease-out infinite;}
+  .status-dot.off::after{border-color:var(--warn);}
+  @keyframes pulse{0%{transform:scale(0.6);opacity:0.6;}80%{transform:scale(1.8);opacity:0;}100%{opacity:0;}}
+  #statusText b{color:var(--navy-900);font-weight:700;}
+
+  nav.tabs{display:flex;gap:8px;margin-bottom:24px;}
+  .tab-btn{background:transparent;color:var(--ink-soft);border:none;padding:10px 4px;font-size:14.5px;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;border-radius:0;}
+  .tab-btn.active{color:var(--navy-950);border-bottom-color:var(--accent);}
+  .tab-btn:hover{color:var(--navy-900);}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .panel{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:26px;margin-bottom:22px;}
+  .panel-title{display:flex;align-items:center;gap:8px;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:var(--navy-700);font-weight:700;margin-bottom:18px;}
+  .panel-title .line{flex:1;height:1px;background:var(--border);}
+  .panel-desc{font-size:13.5px;color:var(--ink-soft);margin:-10px 0 18px;}
+
+  .filter-grid{display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:20px;}
+  .filter-grid.two-col{grid-template-columns:1fr 1fr;}
+  @media (max-width:880px){.filter-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:520px){.filter-grid{grid-template-columns:1fr;}}
+
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:7px;min-height:32px;line-height:1.35;}
+  .field .hint{font-size:11px;color:var(--ink-soft);font-weight:400;margin-left:4px;}
+  .field input, .field select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;color:var(--ink);background:var(--bg);transition:border-color .15s, box-shadow .15s;font-family:inherit;}
+  .field input:focus, .field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);background:var(--white);}
+  .field input:disabled, .field select:disabled{opacity:0.55;cursor:not-allowed;}
+
+  .action-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  button{font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:var(--radius-sm);padding:12px 20px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .1s, box-shadow .15s, background .15s;}
+  button:active{transform:translateY(1px);}
+  .btn-primary{background:var(--brand-2);color:var(--fg-on-dark);box-shadow:var(--shadow-sm);}
+  .btn-primary:hover{background:var(--brand-2-hover);}
+  .btn-ghost{background:var(--white);color:var(--navy-900);border:1.5px solid var(--border);}
+  .btn-ghost:hover{border-color:var(--navy-700);}
+  .btn-good{background:var(--good);color:var(--fg-on-dark);}
+  .btn-good:hover{background:#188457;}
+  .btn-bad{background:var(--bad-soft);color:var(--bad);}
+  .btn-bad:hover{background:#f6d9d9;}
+  .btn-sm{padding:8px 14px;font-size:12.5px;}
+  button:disabled{opacity:0.6;cursor:not-allowed;}
+  .spacer{flex:1;}
+  .result-count{font-size:13px;color:var(--ink-soft);}
+  .result-count b{color:var(--navy-950);}
+
+  .progress-track{height:3px;width:100%;background:var(--border);border-radius:3px;overflow:hidden;margin-top:18px;display:none;}
+  .progress-track.show{display:block;}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg, var(--accent), var(--good));transition:width .35s ease;}
+
+  .sticky-panel{position:sticky;top:16px;z-index:30;}
+  .table-panel{padding:0;overflow:hidden;}
+  .table-body-panel{padding:0;overflow:hidden;}
+  .table-header{display:flex;justify-content:space-between;align-items:center;padding:22px 26px 14px;margin-top:18px;border-top:1px dashed var(--border);}
+  #postingsHeader{margin-top:18px;padding:18px 0 0;border-top:1px dashed var(--border);}
+  .table-scroll{overflow-x:auto;}
+  .jobs-table{width:100%;border-collapse:collapse;table-layout:fixed;}
+  .jobs-table th:nth-child(1), .jobs-table td:nth-child(1){width:24%;}
+  .jobs-table th:nth-child(2), .jobs-table td:nth-child(2){width:12%;}
+  .jobs-table th:nth-child(3), .jobs-table td:nth-child(3){width:12%;}
+  .jobs-table th:nth-child(4), .jobs-table td:nth-child(4){width:13%;}
+  .jobs-table th:nth-child(5), .jobs-table td:nth-child(5){width:13%;}
+  .jobs-table th:nth-child(6), .jobs-table td:nth-child(6){width:12%;}
+  .jobs-table th:nth-child(7), .jobs-table td:nth-child(7){width:14%;}
+  thead th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);font-weight:700;padding:11px 16px;background:var(--navy-100);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;}
+  thead th:hover{color:var(--navy-900);}
+  thead th .arrow{opacity:0.4;font-size:10px;margin-left:4px;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+  tbody tr:hover{background:#fafbfe;}
+  tbody tr:last-child{border-bottom:none;}
+  .pagination-bar{display:flex;align-items:center;justify-content:center;gap:18px;padding:20px 20px 24px;}
+  .pagination-info{font-size:13px;color:var(--ink-soft);font-weight:700;}
+  td{padding:11px 16px;font-size:13px;vertical-align:middle;}
+  td.job-title{font-weight:700;color:var(--navy-950);}
+  td.job-title a{color:inherit;text-decoration:none;}
+  td.job-title a:hover{color:var(--accent);text-decoration:underline;}
+  .company{color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--accent-soft);color:var(--navy-800);}
+  .pill.country{background:var(--good-soft);color:var(--good);}
+  .match-pill{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12.5px;}
+  .match-bar{width:46px;height:5px;border-radius:3px;background:var(--border);overflow:hidden;}
+  .match-bar span{display:block;height:100%;background:var(--good);}
+  .kw-tags{display:flex;flex-wrap:wrap;gap:5px;max-width:220px;}
+  .kw-tag{background:var(--bg);border:1px solid var(--border);color:var(--ink-soft);font-size:11px;padding:3px 8px;border-radius:6px;}
+  .salary{font-weight:700;color:var(--navy-950);white-space:nowrap;}
+  .salary.muted{color:var(--ink-soft);font-weight:500;}
+  .posted{color:var(--ink-soft);white-space:nowrap;font-size:12.5px;}
+
+  .empty-state{padding:70px 20px;text-align:center;color:var(--ink-soft);}
+  .empty-state .icon{font-size:34px;margin-bottom:10px;}
+  .empty-state b{color:var(--navy-950);display:block;margin-bottom:6px;font-size:15px;}
+  .empty-state button{margin-top:16px;}
+
+  .conn-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+  .conn-card{display:flex;align-items:center;gap:16px;border:1.5px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;background:var(--bg);}
+  .conn-icon{width:38px;height:38px;border-radius:10px;background:var(--brand-2);color:var(--fg-on-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;}
+  .conn-main{flex:1;min-width:0;}
+  .conn-title{font-weight:700;color:var(--navy-950);font-size:14.5px;}
+  .conn-sub{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .conn-mask{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--ink-soft);}
+  .conn-actions{display:flex;gap:8px;flex-shrink:0;}
+  .conn-empty{padding:36px 20px;text-align:center;color:var(--ink-soft);border:1.5px dashed var(--border);border-radius:var(--radius-md);}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(10,24,48,0.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .modal-backdrop.show{display:flex;}
+  .modal{background:var(--white);border-radius:var(--radius-lg);box-shadow:var(--shadow);max-width:560px;width:100%;max-height:90vh;overflow-y:auto;padding:28px;}
+  .modal h3{margin:0 0 4px;font-size:18px;color:var(--navy-950);}
+  .modal p.modal-desc{margin:0 0 20px;font-size:13.5px;color:var(--ink-soft);}
+  .modal .field{margin-bottom:16px;}
+  .provider-toggle{display:flex;gap:10px;margin-bottom:18px;}
+  .provider-btn{flex:1;background:var(--bg);color:var(--ink-soft);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:13.5px;font-weight:700;cursor:pointer;text-align:center;}
+  .provider-btn.active{background:var(--brand-2);color:var(--fg-on-dark);border-color:var(--brand-2);}
+  .advanced-toggle{font-size:12.5px;color:var(--accent);font-weight:700;cursor:pointer;margin:4px 0 14px;user-select:none;}
+  .advanced-fields{display:none;border-top:1px dashed var(--border);padding-top:14px;margin-top:2px;}
+  .advanced-fields.show{display:block;}
+  .form-error{background:var(--bad-soft);color:var(--bad);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;margin-bottom:16px;display:none;}
+  .form-error.show{display:block;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+  .help-box{background:var(--accent-soft);border-radius:var(--radius-sm);padding:14px 16px;font-size:12.5px;color:var(--navy-800);line-height:1.6;margin-bottom:18px;}
+  .help-box a{color:var(--navy-950);font-weight:700;}
+  .help-box ol{margin:6px 0 0;padding-left:18px;}
+
+  footer{margin-top:40px;text-align:center;color:var(--ink-soft);font-size:12.5px;padding-top:20px;border-top:1px solid var(--border);}
+
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, th:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){.status-dot::after{animation:none;} *{transition:none !important;}}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="flameGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffd166"/>
+              <stop offset="55%" stop-color="#ff9a3c"/>
+              <stop offset="100%" stop-color="#ff5f5f"/>
+            </linearGradient>
+            <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#dbe6f7"/>
+            </linearGradient>
+          </defs>
+          <!-- launch flame -->
+          <path d="M20 24C17.5 27 16.5 30.5 20 34C23.5 30.5 22.5 27 20 24Z" fill="url(#flameGrad)"/>
+          <path d="M20 26C18.6 28 18.1 30 20 32.3C21.9 30 21.4 28 20 26Z" fill="#fff2c9" opacity="0.85"/>
+          <!-- fins -->
+          <path d="M15.5 20.5C12 20.5 9.5 24 9 27.5C12.2 27 14.3 25.4 15.5 22.5V20.5Z" fill="#c8d6ec"/>
+          <path d="M24.5 20.5C28 20.5 30.5 24 31 27.5C27.8 27 25.7 25.4 24.5 22.5V20.5Z" fill="#c8d6ec"/>
+          <!-- rocket body -->
+          <path d="M20 4C24.5 8 26.5 13.5 26 19.5C26 22.5 23.5 25 20 25C16.5 25 14 22.5 14 19.5C13.5 13.5 15.5 8 20 4Z" fill="url(#bodyGrad)"/>
+          <circle cx="20" cy="14.5" r="3.1" fill="#14315c"/>
+          <circle cx="20" cy="14.5" r="1.7" fill="#7fb3ff"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>LaunchPad</h1>
+        <p>Your personal job‑intelligence dashboard</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="icon-toggle" id="btnTranslateToggle" type="button" aria-pressed="false" title="Translate job postings to English">
+        <span>🌐</span> English
+      </button>
+      <button class="icon-toggle" id="btnThemeToggle" type="button" title="Switch theme">
+        <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
+      </button>
+      <div class="status-badge">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">No API connections yet</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" id="tabSearch" type="button">Search</button>
+    <button class="tab-btn" id="tabSettings" type="button">Settings</button>
+  </nav>
+
+  <div class="view active" id="viewSearch">
+
+    <section class="panel sticky-panel" id="controlsPanel">
+      <div class="panel-title"><span>Filters</span><span class="line"></span></div>
+      <div class="filter-grid">
+        <div class="field">
+          <label for="fKeyword">Job title / keywords</label>
+          <input type="text" id="fKeyword" placeholder="e.g. data analyst, react">
+        </div>
+        <div class="field">
+          <label for="fExperience">Minimum experience (years) <span class="hint">(if available)</span></label>
+          <input type="number" id="fExperience" min="0" max="30" placeholder="e.g. 2">
+        </div>
+        <div class="field">
+          <label for="fSalary">Minimum salary (annual)</label>
+          <input type="number" id="fSalary" min="0" step="1000" placeholder="e.g. 45000">
+        </div>
+        <div class="field">
+          <label for="fConnection">Search in</label>
+          <select id="fConnection">
+            <option value="">All connected sources</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-primary" id="btnRefresh">
+          <span id="refreshIcon">↻</span> Search jobs
+        </button>
+        <button class="btn-ghost" id="btnReset">Reset filters</button>
+        <button class="btn-good" id="btnDownload">⬇ Download Excel report</button>
+        <div class="spacer"></div>
+        <span class="result-count"><b id="resultCount">0</b> jobs matching</span>
+      </div>
+
+      <div class="progress-track" id="progressTrack">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="form-error" id="fetchErrorBanner" style="margin-top:16px;"></div>
+
+      <div class="table-header" id="postingsHeader">
+        <div class="panel-title" style="margin-bottom:0;"><span>Active postings</span></div>
+      </div>
+      <div class="table-scroll">
+        <table class="jobs-table">
+          <thead>
+            <tr>
+              <th data-key="title">Role <span class="arrow">↕</span></th>
+              <th data-key="country">Country <span class="arrow">↕</span></th>
+              <th data-key="experience">Experience <span class="arrow">↕</span></th>
+              <th data-key="salary">Salary <span class="arrow">↕</span></th>
+              <th data-key="matchPercent">Match <span class="arrow">↕</span></th>
+              <th data-key="datePosted">Posted <span class="arrow">↕</span></th>
+              <th>Keywords</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel table-body-panel">
+      <div class="table-scroll">
+        <table class="jobs-table">
+          <tbody id="jobsBody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="icon">🔍</div>
+        <b id="emptyTitle">No jobs match these filters</b>
+        <span id="emptyBody">Try lowering the minimum experience or salary, clearing the keyword field, or clicking Refresh again.</span>
+        <div id="emptyAction"></div>
+      </div>
+      <div class="pagination-bar" id="paginationBar" style="display:none;">
+        <button class="btn-ghost btn-sm" id="btnPrevPage">‹ Prev</button>
+        <span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
+        <button class="btn-ghost btn-sm" id="btnNextPage">Next ›</button>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="view" id="viewSettings">
+
+    <section class="panel">
+      <div class="panel-title"><span>API connections</span><span class="line"></span></div>
+      <p class="panel-desc">Connect one or more job APIs so LaunchPad can pull real, current postings. Saved connections stay in this browser on this device, so they'll be here next time you open this page — no need to re-enter them. Add a separate connection for each country or website you want to search — Refresh on the Search tab pulls from all of them at once.</p>
+
+      <div class="conn-list" id="connList"></div>
+
+      <div class="action-row">
+        <button class="btn-primary" id="btnAddConnection">＋ Add API key</button>
+      </div>
+    </section>
+
+  </div>
+
+  <footer style="background:#111; color:#ccc; text-align:center; padding:20px; font-size:14px; border-radius:12px;">
+    © 2026 Jalauk M. Ujalambkar — All Rights Reserved<br>
+    Created by Jalauk M. Ujalambkar
+  </footer>
+
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h3 id="modalTitle">Add an API connection</h3>
+    <p class="modal-desc">Store the API ID and API key for a job search provider. Nothing leaves this device except the requests LaunchPad makes on your behalf when you click Refresh.</p>
+
+    <div class="form-error" id="formError"></div>
+
+    <div class="provider-toggle">
+      <button type="button" class="provider-btn active" id="providerAdzuna">Adzuna</button>
+      <button type="button" class="provider-btn" id="providerCustom">Custom REST API</button>
+    </div>
+
+    <div id="adzunaFields">
+      <div class="help-box">
+        Adzuna is free and covers many countries with one account.
+        <ol>
+          <li>Go to <a href="https://developer.adzuna.com/" target="_blank" rel="noopener">developer.adzuna.com</a> and register — no card needed.</li>
+          <li>Your account page shows an <b>Application ID</b> and an <b>Application Key</b>.</li>
+          <li>Pick the country you want to search, then paste both values below.</li>
+        </ol>
+      </div>
+      <div class="filter-grid two-col">
+        <div class="field">
+          <label for="mAdzunaCountry">Country</label>
+          <select id="mAdzunaCountry"></select>
+        </div>
+        <div class="field"></div>
+        <div class="field">
+          <label for="mAdzunaId">API ID</label>
+          <input type="text" id="mAdzunaId" placeholder="Application ID" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="mAdzunaKey">API Key</label>
+          <input type="password" id="mAdzunaKey" placeholder="Application Key" autocomplete="off">
+        </div>
+      </div>
+    </div>
+
+    <div id="customFields" style="display:none;">
+      <div class="filter-grid two-col">
+        <div class="field">
+          <label for="mCustomLabel">Connection name</label>
+          <input type="text" id="mCustomLabel" placeholder="e.g. Reed UK, USAJobs">
+        </div>
+        <div class="field">
+          <label for="mCustomCountry">Country label</label>
+          <input type="text" id="mCustomCountry" placeholder="e.g. United States">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Does this API use an ID + Key, or just a Key?</label>
+        <div class="provider-toggle" style="margin-bottom:0;">
+          <button type="button" class="provider-btn active" id="keyModeBoth">API ID + API Key</button>
+          <button type="button" class="provider-btn" id="keyModeKeyOnly">API Key only</button>
+        </div>
+      </div>
+
+      <div class="filter-grid two-col" style="margin-top:16px;">
+        <div class="field" id="customIdField">
+          <label for="mCustomId">API ID</label>
+          <input type="text" id="mCustomId" placeholder="e.g. client ID" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="mCustomKey" id="customKeyLabel">API Key</label>
+          <input type="password" id="mCustomKey" placeholder="e.g. secret key" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Where does the key go?</label>
+        <div class="provider-toggle" style="margin-bottom:0;">
+          <button type="button" class="provider-btn active" id="authModeQuery">In the URL (query string)</button>
+          <button type="button" class="provider-btn" id="authModeHeader">In a request header</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:16px;">
+        <label for="mCustomUrl">Request URL template <span class="hint">use {app_id} {app_key} {keyword} {salary_min} {page}</span></label>
+        <input type="text" id="mCustomUrl" placeholder="https://api.example.com/jobs?id={app_id}&key={app_key}&q={keyword}">
+      </div>
+
+      <div class="filter-grid two-col" id="headerFields" style="display:none;">
+        <div class="field">
+          <label for="mHeaderName">Header name</label>
+          <input type="text" id="mHeaderName" placeholder="e.g. Authorization, X-Api-Key" value="Authorization">
+        </div>
+        <div class="field">
+          <label for="mHeaderValue">Header value template <span class="hint">use {app_key} / {app_id}</span></label>
+          <input type="text" id="mHeaderValue" placeholder="e.g. Bearer {app_key}" value="Bearer {app_key}">
+        </div>
+      </div>
+      <div class="help-box" id="headerWarning" style="display:none;">
+        Header-based auth only works if the API allows direct requests from a browser (CORS). If Refresh fails to connect, the API likely blocks that — try Query string mode if the provider supports it, or check the provider's CORS policy.
+      </div>
+
+      <div class="advanced-toggle" id="advancedToggle">⚙ Advanced: response field mapping ▾</div>
+      <div class="advanced-fields" id="advancedFields">
+        <p class="panel-desc" style="margin-top:0;">Tell LaunchPad where to find each field in the JSON response. Dot notation is supported (e.g. <code>company.display_name</code>). Defaults match Adzuna-style APIs.</p>
+        <div class="filter-grid two-col">
+          <div class="field"><label>Results array path</label><input type="text" id="mMapResults" value="results"></div>
+          <div class="field"><label>Job title path</label><input type="text" id="mMapTitle" value="title"></div>
+          <div class="field"><label>Company name path</label><input type="text" id="mMapCompany" value="company.display_name"></div>
+          <div class="field"><label>Listing URL path</label><input type="text" id="mMapUrl" value="redirect_url"></div>
+          <div class="field"><label>Min salary path</label><input type="text" id="mMapSalMin" value="salary_min"></div>
+          <div class="field"><label>Max salary path</label><input type="text" id="mMapSalMax" value="salary_max"></div>
+          <div class="field"><label>Date posted path</label><input type="text" id="mMapDate" value="created"></div>
+          <div class="field"><label>Description path</label><input type="text" id="mMapDesc" value="description"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="btnModalCancel">Cancel</button>
+      <button type="button" class="btn-primary" id="btnModalSave">Save connection</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADZUNA_COUNTRIES = {
+  gb:"United Kingdom", us:"United States", nl:"Netherlands", de:"Germany", fr:"France",
+  au:"Australia", at:"Austria", br:"Brazil", ca:"Canada", in:"India", it:"Italy",
+  mx:"Mexico", nz:"New Zealand", pl:"Poland", sg:"Singapore", za:"South Africa"
+};
+
+let connections = [];
+let currentJobs = [];
+let visibleJobs = [];
+let sortState = { key: null, dir: 1 };
+let editingConnectionId = null;
+const PAGE_SIZE = 10;
+let currentPage = 1;
+
+const els = {
+  keyword: document.getElementById('fKeyword'),
+  experience: document.getElementById('fExperience'),
+  salary: document.getElementById('fSalary'),
+  connectionSelect: document.getElementById('fConnection'),
+  body: document.getElementById('jobsBody'),
+  empty: document.getElementById('emptyState'),
+  emptyTitle: document.getElementById('emptyTitle'),
+  emptyBody: document.getElementById('emptyBody'),
+  emptyAction: document.getElementById('emptyAction'),
+  count: document.getElementById('resultCount'),
+  status: document.getElementById('statusText'),
+  statusDot: document.getElementById('statusDot'),
+  progressTrack: document.getElementById('progressTrack'),
+  progressFill: document.getElementById('progressFill'),
+  refreshIcon: document.getElementById('refreshIcon'),
+  downloadBtn: document.getElementById('btnDownload'),
+  connList: document.getElementById('connList'),
+  errorBanner: document.getElementById('fetchErrorBanner'),
+  paginationBar: document.getElementById('paginationBar'),
+  paginationInfo: document.getElementById('paginationInfo'),
+  btnPrevPage: document.getElementById('btnPrevPage'),
+  btnNextPage: document.getElementById('btnNextPage'),
+  btnTranslateToggle: document.getElementById('btnTranslateToggle'),
+  btnThemeToggle: document.getElementById('btnThemeToggle'),
+  themeIcon: document.getElementById('themeIcon'),
+  themeLabel: document.getElementById('themeLabel'),
+};
+
+const STORAGE_KEY = 'launchpad_connections';
+
+async function loadConnections(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    connections = raw ? JSON.parse(raw) : [];
+  } catch(e){
+    console.error('Could not load saved connections', e);
+    connections = [];
+  }
+}
+async function saveConnections(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(connections));
+  } catch(e){
+    console.error('Could not save connections', e);
+    alert('Your browser blocked saving these details (private/incognito mode can do this). They will be lost when you close this page.');
+  }
+}
+
+function uid(){ return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function stripHtml(html){
+  const div = document.createElement('div');
+  div.innerHTML = html || '';
+  return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+}
+function makeExcerpt(text, len){
+  const clean = stripHtml(text);
+  return clean.length > len ? clean.slice(0, len).trim() + '…' : clean;
+}
+const STOPWORDS = new Set(['the','and','for','with','you','are','this','that','from','will','have','has','our','your',
+  'job','role','team','work','experience','years','including','more','about','into','across','their','they','who',
+  'what','all','any','can','looking','ideal','strong','skills','using','used','use','also','other','well','than',
+  'within','where','when','high','were','being','able','apply','send']);
+function extractKeywords(text, max = 6){
+  const words = (text || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+    .filter(w => w.length > 3 && !STOPWORDS.has(w));
+  const freq = {};
+  words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+  return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, max).map(([w]) => w);
+}
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+function formatSalary(n){ return '€' + Number(n).toLocaleString('en-US'); }
+function formatDate(iso){
+  if (!iso) return '—';
+  const d = new Date(iso.length > 10 ? iso : iso + 'T00:00:00');
+  if (isNaN(d)) return '—';
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+function getPath(obj, path){
+  if (!path) return undefined;
+  return path.split('.').reduce((acc, key) => (acc == null ? undefined : acc[key]), obj);
+}
+function maskSecret(s){
+  if (!s) return '—';
+  if (s.length <= 4) return '••••';
+  return s.slice(0,2) + '••••' + s.slice(-2);
+}
+
+function populateConnectionFilterSelect(){
+  els.connectionSelect.innerHTML = '<option value="">All connected sources</option>' +
+    connections.map(c => `<option value="${c.id}">${escapeHtml(c.label)}</option>`).join('');
+}
+
+function connectionSubtitle(c){
+  const parts = [c.countryLabel];
+  if (c.provider === 'adzuna'){
+    parts.push(`API ID: ${maskSecret(c.appId)}`);
+    parts.push(`API Key: ${maskSecret(c.appKey)}`);
+  } else {
+    if (c.keyMode !== 'key_only') parts.push(`API ID: ${maskSecret(c.appId)}`);
+    parts.push(`API Key: ${maskSecret(c.appKey)}`);
+    parts.push(c.authMode === 'header' ? `Header (${c.headerName || 'Authorization'})` : 'Query string');
+  }
+  return parts.join(' · ');
+}
+
+function renderConnections(){
+  if (connections.length === 0){
+    els.connList.innerHTML = `<div class="conn-empty">No API connections yet. Click <b>＋ Add API key</b> below to connect a job search provider.</div>`;
+  } else {
+    els.connList.innerHTML = connections.map(c => `
+      <div class="conn-card">
+        <div class="conn-icon">${c.provider === 'adzuna' ? 'AZ' : 'API'}</div>
+        <div class="conn-main">
+          <div class="conn-title">${escapeHtml(c.label)}</div>
+          <div class="conn-sub">${escapeHtml(connectionSubtitle(c))}</div>
+        </div>
+        <div class="conn-actions">
+          <button class="btn-ghost btn-sm" data-edit="${c.id}">Edit</button>
+          <button class="btn-bad btn-sm" data-delete="${c.id}">Remove</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  els.connList.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.edit)));
+  els.connList.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', () => deleteConnection(btn.dataset.delete)));
+  populateConnectionFilterSelect();
+  updateStatusBadge();
+}
+
+async function deleteConnection(id){
+  if (!confirm('Remove this API connection? You can add it again later.')) return;
+  connections = connections.filter(c => c.id !== id);
+  await saveConnections();
+  renderConnections();
+  currentJobs = [];
+  visibleJobs = [];
+  currentPage = 1;
+  render();
+}
+
+function updateStatusBadge(){
+  if (connections.length === 0){
+    els.statusDot.classList.add('off');
+    els.status.innerHTML = 'No API connections yet';
+  } else {
+    els.statusDot.classList.remove('off');
+    els.status.innerHTML = `<b>${connections.length}</b> source${connections.length === 1 ? '' : 's'} connected`;
+  }
+}
+
+const modalEls = {
+  backdrop: document.getElementById('modalBackdrop'),
+  title: document.getElementById('modalTitle'),
+  error: document.getElementById('formError'),
+  providerAdzuna: document.getElementById('providerAdzuna'),
+  providerCustom: document.getElementById('providerCustom'),
+  adzunaFields: document.getElementById('adzunaFields'),
+  customFields: document.getElementById('customFields'),
+  adzunaCountry: document.getElementById('mAdzunaCountry'),
+  adzunaId: document.getElementById('mAdzunaId'),
+  adzunaKey: document.getElementById('mAdzunaKey'),
+  customLabel: document.getElementById('mCustomLabel'),
+  customCountry: document.getElementById('mCustomCountry'),
+  customUrl: document.getElementById('mCustomUrl'),
+  customId: document.getElementById('mCustomId'),
+  customKey: document.getElementById('mCustomKey'),
+  customIdField: document.getElementById('customIdField'),
+  keyModeBoth: document.getElementById('keyModeBoth'),
+  keyModeKeyOnly: document.getElementById('keyModeKeyOnly'),
+  authModeQuery: document.getElementById('authModeQuery'),
+  authModeHeader: document.getElementById('authModeHeader'),
+  headerFields: document.getElementById('headerFields'),
+  headerWarning: document.getElementById('headerWarning'),
+  headerName: document.getElementById('mHeaderName'),
+  headerValue: document.getElementById('mHeaderValue'),
+  advancedToggle: document.getElementById('advancedToggle'),
+  advancedFields: document.getElementById('advancedFields'),
+  mapResults: document.getElementById('mMapResults'),
+  mapTitle: document.getElementById('mMapTitle'),
+  mapCompany: document.getElementById('mMapCompany'),
+  mapUrl: document.getElementById('mMapUrl'),
+  mapSalMin: document.getElementById('mMapSalMin'),
+  mapSalMax: document.getElementById('mMapSalMax'),
+  mapDate: document.getElementById('mMapDate'),
+  mapDesc: document.getElementById('mMapDesc'),
+};
+let modalProvider = 'adzuna';
+let modalKeyMode = 'both';
+let modalAuthMode = 'query';
+
+function populateModalCountrySelect(){
+  modalEls.adzunaCountry.innerHTML = Object.entries(ADZUNA_COUNTRIES)
+    .map(([code, name]) => `<option value="${code}">${name}</option>`).join('');
+}
+
+function setModalProvider(p){
+  modalProvider = p;
+  modalEls.providerAdzuna.classList.toggle('active', p === 'adzuna');
+  modalEls.providerCustom.classList.toggle('active', p === 'custom');
+  modalEls.adzunaFields.style.display = p === 'adzuna' ? 'block' : 'none';
+  modalEls.customFields.style.display = p === 'custom' ? 'block' : 'none';
+}
+
+function setKeyMode(mode){
+  modalKeyMode = mode;
+  modalEls.keyModeBoth.classList.toggle('active', mode === 'both');
+  modalEls.keyModeKeyOnly.classList.toggle('active', mode === 'key_only');
+  modalEls.customIdField.style.display = mode === 'both' ? 'block' : 'none';
+}
+
+function setAuthMode(mode){
+  modalAuthMode = mode;
+  modalEls.authModeQuery.classList.toggle('active', mode === 'query');
+  modalEls.authModeHeader.classList.toggle('active', mode === 'header');
+  modalEls.headerFields.style.display = mode === 'header' ? 'grid' : 'none';
+  modalEls.headerWarning.style.display = mode === 'header' ? 'block' : 'none';
+}
+
+function resetModalForm(){
+  modalEls.error.classList.remove('show');
+  modalEls.error.textContent = '';
+  modalEls.adzunaId.value = '';
+  modalEls.adzunaKey.value = '';
+  modalEls.customLabel.value = '';
+  modalEls.customCountry.value = '';
+  modalEls.customUrl.value = '';
+  modalEls.customId.value = '';
+  modalEls.customKey.value = '';
+  modalEls.headerName.value = 'Authorization';
+  modalEls.headerValue.value = 'Bearer {app_key}';
+  modalEls.mapResults.value = 'results';
+  modalEls.mapTitle.value = 'title';
+  modalEls.mapCompany.value = 'company.display_name';
+  modalEls.mapUrl.value = 'redirect_url';
+  modalEls.mapSalMin.value = 'salary_min';
+  modalEls.mapSalMax.value = 'salary_max';
+  modalEls.mapDate.value = 'created';
+  modalEls.mapDesc.value = 'description';
+  modalEls.advancedFields.classList.remove('show');
+  setModalProvider('adzuna');
+  setKeyMode('both');
+  setAuthMode('query');
+}
+
+function openModal(connectionId){
+  resetModalForm();
+  editingConnectionId = connectionId || null;
+
+  if (editingConnectionId){
+    const c = connections.find(x => x.id === editingConnectionId);
+    if (c){
+      modalEls.title.textContent = 'Edit API connection';
+      setModalProvider(c.provider);
+      if (c.provider === 'adzuna'){
+        modalEls.adzunaCountry.value = c.countryCode;
+        modalEls.adzunaId.value = c.appId;
+        modalEls.adzunaKey.value = c.appKey;
+      } else {
+        modalEls.customLabel.value = c.label;
+        modalEls.customCountry.value = c.countryLabel;
+        modalEls.customUrl.value = c.urlTemplate;
+        modalEls.customId.value = c.appId || '';
+        modalEls.customKey.value = c.appKey;
+        setKeyMode(c.keyMode === 'key_only' ? 'key_only' : 'both');
+        setAuthMode(c.authMode === 'header' ? 'header' : 'query');
+        modalEls.headerName.value = c.headerName || 'Authorization';
+        modalEls.headerValue.value = c.headerValueTemplate || 'Bearer {app_key}';
+        const m = c.mapping || {};
+        modalEls.mapResults.value = m.results || 'results';
+        modalEls.mapTitle.value = m.title || 'title';
+        modalEls.mapCompany.value = m.company || 'company.display_name';
+        modalEls.mapUrl.value = m.url || 'redirect_url';
+        modalEls.mapSalMin.value = m.salaryMin || 'salary_min';
+        modalEls.mapSalMax.value = m.salaryMax || 'salary_max';
+        modalEls.mapDate.value = m.date || 'created';
+        modalEls.mapDesc.value = m.description || 'description';
+      }
+    }
+  } else {
+    modalEls.title.textContent = 'Add an API connection';
+  }
+
+  modalEls.backdrop.classList.add('show');
+}
+
+function closeModal(){
+  modalEls.backdrop.classList.remove('show');
+  editingConnectionId = null;
+}
+
+async function saveModal(){
+  modalEls.error.classList.remove('show');
+
+  if (modalProvider === 'adzuna'){
+    const countryCode = modalEls.adzunaCountry.value;
+    const appId = modalEls.adzunaId.value.trim();
+    const appKey = modalEls.adzunaKey.value.trim();
+    if (!appId || !appKey){
+      modalEls.error.textContent = 'Please fill in both the API ID and the API key.';
+      modalEls.error.classList.add('show');
+      return;
+    }
+    const countryLabel = ADZUNA_COUNTRIES[countryCode];
+    const record = {
+      id: editingConnectionId || uid(),
+      provider: 'adzuna',
+      label: `Adzuna — ${countryLabel}`,
+      countryCode, countryLabel, appId, appKey
+    };
+    upsertConnection(record);
+  } else {
+    const label = modalEls.customLabel.value.trim();
+    const countryLabel = modalEls.customCountry.value.trim() || 'Unspecified';
+    const urlTemplate = modalEls.customUrl.value.trim();
+    const appId = modalKeyMode === 'key_only' ? '' : modalEls.customId.value.trim();
+    const appKey = modalEls.customKey.value.trim();
+    const headerName = modalEls.headerName.value.trim() || 'Authorization';
+    const headerValueTemplate = modalEls.headerValue.value.trim() || '{app_key}';
+
+    if (!label || !urlTemplate || !appKey || (modalKeyMode === 'both' && !appId)){
+      modalEls.error.textContent = modalKeyMode === 'both'
+        ? 'Please fill in the connection name, request URL, API ID and API key.'
+        : 'Please fill in the connection name, request URL and API key.';
+      modalEls.error.classList.add('show');
+      return;
+    }
+    if (modalAuthMode === 'header' && !headerName){
+      modalEls.error.textContent = 'Please enter a header name for the API key.';
+      modalEls.error.classList.add('show');
+      return;
+    }
+
+    const record = {
+      id: editingConnectionId || uid(),
+      provider: 'custom',
+      label, countryLabel, urlTemplate, appId, appKey,
+      keyMode: modalKeyMode,
+      authMode: modalAuthMode,
+      headerName: modalAuthMode === 'header' ? headerName : '',
+      headerValueTemplate: modalAuthMode === 'header' ? headerValueTemplate : '',
+      mapping: {
+        results: modalEls.mapResults.value.trim() || 'results',
+        title: modalEls.mapTitle.value.trim() || 'title',
+        company: modalEls.mapCompany.value.trim() || 'company.display_name',
+        url: modalEls.mapUrl.value.trim() || 'redirect_url',
+        salaryMin: modalEls.mapSalMin.value.trim() || 'salary_min',
+        salaryMax: modalEls.mapSalMax.value.trim() || 'salary_max',
+        date: modalEls.mapDate.value.trim() || 'created',
+        description: modalEls.mapDesc.value.trim() || 'description'
+      }
+    };
+    upsertConnection(record);
+  }
+
+  await saveConnections();
+  renderConnections();
+  closeModal();
+  switchView('search');
+  refreshJobs();
+}
+
+function upsertConnection(record){
+  const idx = connections.findIndex(c => c.id === record.id);
+  if (idx === -1) connections.push(record);
+  else connections[idx] = record;
+}
+
+async function fetchWithProxyFallback(url, headers){
+  if (headers && Object.keys(headers).length){
+    try{
+      return await fetch(url, { headers });
+    } catch(e){
+      throw new Error('Could not reach this API directly. Header-based authentication only works if the provider allows direct browser requests (CORS) — it cannot be routed through a fallback proxy.');
+    }
+  }
+
+  try{
+    const res = await fetch(url);
+    if (res.ok) return res;
+    // Non-network failure (bad key, bad params, etc) — surface it directly, no point proxying.
+    if (res.status && res.status !== 0) return res;
+  } catch(e){ /* likely CORS or network block — fall through to proxy */ }
+
+  try{
+    const proxied = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const res2 = await fetch(proxied);
+    return res2;
+  } catch(e2){
+    throw new Error('Could not reach the job search service — check your internet connection and try again.');
+  }
+}
+
+async function fetchAdzunaConnection(conn, filters){
+  const params = new URLSearchParams({
+    app_id: conn.appId,
+    app_key: conn.appKey,
+    results_per_page: '25',
+    'content-type': 'application/json'
+  });
+  if (filters.keyword) params.set('what', filters.keyword);
+  if (filters.minSalary) params.set('salary_min', String(filters.minSalary));
+
+  const url = `https://api.adzuna.com/v1/api/jobs/${conn.countryCode}/search/1?${params.toString()}`;
+  const res = await fetchWithProxyFallback(url);
+  if (!res.ok){
+    if (res.status === 401 || res.status === 403){
+      throw new Error(`"${conn.label}": the API ID or API key looks incorrect.`);
+    }
+    throw new Error(`"${conn.label}" returned an error (status ${res.status}).`);
+  }
+  const data = await res.json();
+  return (data.results || []).map(r => {
+    const salMin = r.salary_min, salMax = r.salary_max;
+    const salary = (salMin && salMax) ? Math.round((salMin + salMax) / 2) : (salMin || salMax || null);
+    const desc = r.description || '';
+    return {
+      title: stripHtml(r.title) || 'Untitled role',
+      company: (r.company && r.company.display_name) || 'Not specified',
+      country: conn.countryLabel,
+      experience: null,
+      salary,
+      link: r.redirect_url || '#',
+      keywords: extractKeywords(desc || r.title, 6),
+      datePosted: (r.created || '').slice(0, 10),
+      description: stripHtml(desc) || 'No description provided by the source listing.',
+      summary: makeExcerpt(desc, 180) || 'No description provided by the source listing.',
+      recruiterName: 'Not published by source',
+      recruiterEmail: 'Not published by source',
+      sourceLabel: conn.label
+    };
+  });
+}
+
+async function fetchCustomConnection(conn, filters){
+  let url = conn.urlTemplate
+    .replace('{app_id}', encodeURIComponent(conn.appId || ''))
+    .replace('{app_key}', encodeURIComponent(conn.appKey || ''))
+    .replace('{keyword}', encodeURIComponent(filters.keyword || ''))
+    .replace('{salary_min}', encodeURIComponent(filters.minSalary || ''))
+    .replace('{page}', '1');
+
+  let headers = null;
+  if (conn.authMode === 'header'){
+    const headerValue = (conn.headerValueTemplate || '{app_key}')
+      .replace('{app_id}', conn.appId || '')
+      .replace('{app_key}', conn.appKey || '');
+    headers = { [conn.headerName || 'Authorization']: headerValue };
+  }
+
+  const res = await fetchWithProxyFallback(url, headers);
+  if (!res.ok){
+    if (res.status === 401 || res.status === 403){
+      throw new Error(`"${conn.label}": the API key looks incorrect or wasn't accepted.`);
+    }
+    throw new Error(`"${conn.label}" returned an error (status ${res.status}).`);
+  }
+  const data = await res.json();
+  const m = conn.mapping || {};
+  const list = getPath(data, m.results) || [];
+  if (!Array.isArray(list)){
+    throw new Error(`"${conn.label}": couldn't find a results list at "${m.results}" in the response. Check the field mapping in Settings.`);
+  }
+
+  return list.map(r => {
+    const salMin = Number(getPath(r, m.salaryMin));
+    const salMax = Number(getPath(r, m.salaryMax));
+    const salary = (!isNaN(salMin) && !isNaN(salMax) && salMin && salMax) ? Math.round((salMin + salMax) / 2)
+      : (!isNaN(salMin) && salMin ? salMin : (!isNaN(salMax) && salMax ? salMax : null));
+    const desc = getPath(r, m.description) || '';
+    const title = getPath(r, m.title);
+    return {
+      title: stripHtml(title) || 'Untitled role',
+      company: getPath(r, m.company) || 'Not specified',
+      country: conn.countryLabel,
+      experience: null,
+      salary,
+      link: getPath(r, m.url) || '#',
+      keywords: extractKeywords(desc || title, 6),
+      datePosted: String(getPath(r, m.date) || '').slice(0, 10),
+      description: stripHtml(desc) || 'No description provided by the source listing.',
+      summary: makeExcerpt(desc, 180) || 'No description provided by the source listing.',
+      recruiterName: 'Not published by source',
+      recruiterEmail: 'Not published by source',
+      sourceLabel: conn.label
+    };
+  });
+}
+
+async function refreshJobs(){
+  if (connections.length === 0){
+    switchView('settings');
+    alert('Add at least one API connection in Settings before refreshing.');
+    return;
+  }
+
+  const selectedId = els.connectionSelect.value;
+  const targets = selectedId ? connections.filter(c => c.id === selectedId) : connections;
+  const filters = {
+    keyword: els.keyword.value.trim(),
+    minSalary: parseFloat(els.salary.value) || 0
+  };
+
+  const btn = document.getElementById('btnRefresh');
+  btn.disabled = true;
+  els.refreshIcon.style.animation = 'spin 0.8s linear infinite';
+  els.progressTrack.classList.add('show');
+  els.progressFill.style.width = '10%';
+
+  const errors = [];
+  let merged = [];
+  els.errorBanner.classList.remove('show');
+  els.errorBanner.textContent = '';
+
+  try{
+    for (let i = 0; i < targets.length; i++){
+      const conn = targets[i];
+      els.progressFill.style.width = `${10 + Math.round(((i + 0.5) / targets.length) * 75)}%`;
+      try{
+        const jobs = conn.provider === 'adzuna'
+          ? await fetchAdzunaConnection(conn, filters)
+          : await fetchCustomConnection(conn, filters);
+        merged = merged.concat(jobs);
+      } catch(err){
+        console.error(`LaunchPad fetch error (${conn.label}):`, err);
+        errors.push(err.message || `"${conn.label}" failed.`);
+      }
+    }
+
+    els.progressFill.style.width = '92%';
+    currentJobs = merged;
+    applyClientFilters();
+    els.progressFill.style.width = '100%';
+    els.status.innerHTML = `<b>${connections.length}</b> source${connections.length === 1 ? '' : 's'} connected · refreshed just now`;
+
+    if (errors.length){
+      els.errorBanner.innerHTML = `<b>${errors.length} source${errors.length === 1 ? '' : 's'} couldn't be reached:</b><br>` + errors.map(escapeHtml).join('<br>');
+      els.errorBanner.classList.add('show');
+    } else if (merged.length === 0){
+      els.errorBanner.innerHTML = `All sources responded, but returned 0 jobs. Try broadening your keyword or clearing filters and clicking Refresh again.`;
+      els.errorBanner.classList.add('show');
+    }
+  } finally {
+    setTimeout(() => {
+      btn.disabled = false;
+      els.refreshIcon.style.animation = '';
+      els.progressTrack.classList.remove('show');
+    }, 300);
+  }
+}
+
+function computeMatchPercent(job, filters){
+  const { kw, minExp, minSal } = filters;
+  const noFiltersActive = !kw && isNaN(minExp) && !minSal;
+  if (noFiltersActive) return 75;
+
+  let score = 0;
+  if (kw){
+    const terms = kw.split(/\s+/).filter(Boolean);
+    const haystack = (job.title + ' ' + job.keywords.join(' ') + ' ' + (job.description || '')).toLowerCase();
+    const hits = terms.filter(t => haystack.includes(t)).length;
+    score += terms.length ? (hits / terms.length) * 50 : 50;
+  } else {
+    score += 35;
+  }
+
+  if (!isNaN(minExp) && job.experience !== null && job.experience !== undefined){
+    score += job.experience >= minExp ? 25 : Math.max(0, 25 - (minExp - job.experience) * 6);
+  } else {
+    score += 20;
+  }
+
+  if (minSal && job.salary){
+    score += job.salary >= minSal ? 25 : Math.max(0, 25 * (job.salary / minSal));
+  } else {
+    score += 20;
+  }
+
+  return Math.round(Math.min(100, score));
+}
+
+function applyClientFilters(){
+  const kw = els.keyword.value.trim().toLowerCase();
+  const minExp = parseFloat(els.experience.value);
+  const minSal = parseFloat(els.salary.value) || 0;
+  const filters = { kw, minExp, minSal };
+
+  const filtered = currentJobs
+    .filter(j => {
+      const matchesKw = !kw || j.title.toLowerCase().includes(kw) ||
+        j.keywords.some(k => k.toLowerCase().includes(kw)) ||
+        (j.description || '').toLowerCase().includes(kw);
+      const matchesExp = (j.experience === null || j.experience === undefined) ? true : j.experience >= minExp;
+      const matchesSal = j.salary ? j.salary >= minSal : minSal === 0;
+      return matchesKw && matchesExp && matchesSal;
+    })
+    .map(j => ({ ...j, matchPercent: computeMatchPercent(j, filters) }));
+
+  visibleJobs = filtered;
+  currentPage = 1;
+  if (sortState.key) sortVisible();
+  else render();
+}
+
+function sortJobs(key){
+  sortState.dir = (sortState.key === key) ? sortState.dir * -1 : 1;
+  sortState.key = key;
+  currentPage = 1;
+  sortVisible();
+}
+function sortVisible(){
+  const key = sortState.key;
+  visibleJobs = [...visibleJobs].sort((a, b) => {
+    let av = a[key], bv = b[key];
+    if (av === null || av === undefined) av = '';
+    if (bv === null || bv === undefined) bv = '';
+    if (typeof av === 'string'){ av = av.toLowerCase(); bv = bv.toLowerCase(); }
+    if (av < bv) return -1 * sortState.dir;
+    if (av > bv) return 1 * sortState.dir;
+    return 0;
+  });
+  render();
+}
+
+/* ---------------- Theme (light/dark) ---------------- */
+const THEME_KEY = 'launchpad_theme';
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  els.themeIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
+  els.themeLabel.textContent = theme === 'dark' ? 'Dark' : 'Light';
+  els.btnThemeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+}
+function initTheme(){
+  let theme = 'light';
+  try{
+    theme = localStorage.getItem(THEME_KEY) ||
+      (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  } catch(e){}
+  applyTheme(theme);
+}
+function toggleTheme(){
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try{ localStorage.setItem(THEME_KEY, next); } catch(e){}
+}
+
+/* ---------------- Translate to English ---------------- */
+const TRANSLATE_KEY = 'launchpad_translate';
+let translateEnabled = false;
+const translationCache = new Map();
+
+function translationKey(job){ return job.link || (job.title + '::' + job.company); }
+
+function setTranslateUI(){
+  els.btnTranslateToggle.classList.toggle('active', translateEnabled);
+  els.btnTranslateToggle.setAttribute('aria-pressed', translateEnabled ? 'true' : 'false');
+}
+
+function initTranslate(){
+  try{ translateEnabled = localStorage.getItem(TRANSLATE_KEY) === '1'; } catch(e){ translateEnabled = false; }
+  setTranslateUI();
+}
+
+function toggleTranslate(){
+  translateEnabled = !translateEnabled;
+  try{ localStorage.setItem(TRANSLATE_KEY, translateEnabled ? '1' : '0'); } catch(e){}
+  setTranslateUI();
+  render();
+}
+
+async function translateText(text){
+  if (!text || !text.trim()) return text;
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+  try{
+    let res;
+    try{
+      res = await fetch(url);
+      if (!res.ok) throw new Error('bad status');
+    } catch(e){
+      const proxied = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      res = await fetch(proxied);
+    }
+    const data = await res.json();
+    const translated = (data[0] || []).map(seg => seg[0]).join('');
+    return translated || text;
+  } catch(e){
+    console.error('Translation failed, showing original text', e);
+    return text;
+  }
+}
+
+async function translateJob(job){
+  const key = translationKey(job);
+  if (translationCache.has(key)) return translationCache.get(key);
+  const combined = [job.title, job.summary || '', job.keywords.join(' | ')].join('\n');
+  let translatedCombined;
+  try{
+    translatedCombined = await translateText(combined);
+  } catch(e){
+    translatedCombined = combined;
+  }
+  const parts = translatedCombined.split('\n');
+  const translatedKeywords = (parts[2] || job.keywords.join(' | ')).split('|').map(s => s.trim()).filter(Boolean);
+  const translated = {
+    ...job,
+    title: parts[0] || job.title,
+    summary: parts[1] || job.summary,
+    keywords: translatedKeywords.length ? translatedKeywords : job.keywords
+  };
+  translationCache.set(key, translated);
+  return translated;
+}
+
+async function translatePageIfNeeded(pageItems){
+  const needing = pageItems.filter(j => !translationCache.has(translationKey(j)));
+  if (needing.length === 0) return;
+  await Promise.all(needing.map(j => translateJob(j).catch(() => {})));
+  if (translateEnabled) render();
+}
+
+function render(){
+  els.count.textContent = visibleJobs.length;
+
+  if (connections.length === 0){
+    els.body.innerHTML = '';
+    els.empty.style.display = 'block';
+    els.emptyTitle.textContent = 'No API connections yet';
+    els.emptyBody.textContent = 'Connect a job search API in Settings, then come back and click Refresh.';
+    els.emptyAction.innerHTML = '';
+    const goBtn = document.createElement('button');
+    goBtn.className = 'btn-primary';
+    goBtn.textContent = 'Go to Settings';
+    goBtn.addEventListener('click', () => switchView('settings'));
+    els.emptyAction.appendChild(goBtn);
+    els.paginationBar.style.display = 'none';
+    return;
+  }
+
+  if (visibleJobs.length === 0){
+    els.body.innerHTML = '';
+    els.empty.style.display = 'block';
+    els.emptyTitle.textContent = 'No jobs match these filters';
+    els.emptyBody.textContent = 'Try lowering the minimum experience or salary, clearing the keyword field, or clicking Refresh again.';
+    els.emptyAction.innerHTML = '';
+    els.paginationBar.style.display = 'none';
+    return;
+  }
+  els.empty.style.display = 'none';
+
+  const totalPages = Math.max(1, Math.ceil(visibleJobs.length / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = visibleJobs.slice(start, start + PAGE_SIZE);
+  const displayItems = translateEnabled ? pageItems.map(j => translationCache.get(translationKey(j)) || j) : pageItems;
+
+  els.body.innerHTML = displayItems.map(j => `
+    <tr>
+      <td class="job-title">
+        <a href="${j.link}" target="_blank" rel="noopener">${escapeHtml(j.title)}</a>
+        <div class="company">${escapeHtml(j.company)}</div>
+      </td>
+      <td><span class="pill country">${escapeHtml(j.country)}</span></td>
+      <td>${(j.experience === null || j.experience === undefined) ? '—' : j.experience + '+ yrs'}</td>
+      <td class="salary ${j.salary ? '' : 'muted'}">${j.salary ? formatSalary(j.salary) : 'Not listed'}</td>
+      <td>
+        <div class="match-pill">
+          ${j.matchPercent}%
+          <span class="match-bar"><span style="width:${j.matchPercent}%"></span></span>
+        </div>
+      </td>
+      <td class="posted">${formatDate(j.datePosted)}</td>
+      <td><div class="kw-tags">${j.keywords.map(k => `<span class="kw-tag">${escapeHtml(k)}</span>`).join('')}</div></td>
+    </tr>
+  `).join('');
+
+  if (translateEnabled) translatePageIfNeeded(pageItems);
+
+  if (totalPages > 1){
+    els.paginationBar.style.display = 'flex';
+    els.paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    els.btnPrevPage.disabled = currentPage <= 1;
+    els.btnNextPage.disabled = currentPage >= totalPages;
+  } else {
+    els.paginationBar.style.display = 'none';
+  }
+}
+
+function goToPage(delta){
+  currentPage += delta;
+  render();
+}
+
+function resetFilters(){
+  els.keyword.value = '';
+  els.experience.value = '';
+  els.salary.value = '';
+  els.connectionSelect.value = '';
+  sortState = { key: null, dir: 1 };
+  currentPage = 1;
+  applyClientFilters();
+}
+
+function switchView(view){
+  document.getElementById('viewSearch').classList.toggle('active', view === 'search');
+  document.getElementById('viewSettings').classList.toggle('active', view === 'settings');
+  document.getElementById('tabSearch').classList.toggle('active', view === 'search');
+  document.getElementById('tabSettings').classList.toggle('active', view === 'settings');
+}
+
+async function downloadExcel(){
+  if (visibleJobs.length === 0){
+    alert('No jobs to export — refresh or adjust your filters first.');
+    return;
+  }
+  els.downloadBtn.disabled = true;
+  const originalLabel = els.downloadBtn.innerHTML;
+  els.downloadBtn.innerHTML = '⏳ Building report…';
+
+  let exportJobs = visibleJobs;
+  if (translateEnabled){
+    els.downloadBtn.innerHTML = '⏳ Translating…';
+    try{
+      exportJobs = await Promise.all(visibleJobs.map(j => translateJob(j).catch(() => j)));
+    } catch(e){
+      exportJobs = visibleJobs;
+    }
+    els.downloadBtn.innerHTML = '⏳ Building report…';
+  }
+
+  try{
+    const NAVY = 'FF0E2140';
+    const NAVY_DARK = 'FF0A1830';
+    const LIGHT_BAND = 'FFF3F6FC';
+    const WHITE = 'FFFFFFFF';
+    const BORDER = 'FFD9E1EE';
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'LaunchPad — Personal Job Intelligence';
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet('Job Matches', {
+      views: [{ state: 'frozen', ySplit: 4, showGridLines: false }]
+    });
+
+    const columns = [
+      { header: 'SL. NO', width: 8 },
+      { header: 'Job Title', width: 28 },
+      { header: 'Job Description', width: 46 },
+      { header: 'Summary (Paraphrased)', width: 38 },
+      { header: 'Company Name', width: 20 },
+      { header: 'Link to Full JD', width: 30 },
+      { header: 'Source', width: 18 },
+      { header: 'Recruiter / HR Name', width: 20 },
+      { header: 'Recruiter / HR Email', width: 28 },
+      { header: 'Date of Posting', width: 16 },
+      { header: '% Match', width: 11 },
+      { header: 'Salary', width: 14 },
+      { header: 'Keywords Extracted from JD', width: 32 }
+    ];
+    sheet.columns = columns.map(c => ({ width: c.width }));
+
+    sheet.mergeCells(1, 1, 1, columns.length);
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = 'LaunchPad — Personal Job Intelligence Report';
+    titleCell.font = { name: 'Calibri', size: 16, bold: true, color: { argb: WHITE } };
+    titleCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+    sheet.getRow(1).height = 30;
+    sheet.getRow(1).eachCell(c => { c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:NAVY_DARK} }; });
+
+    sheet.mergeCells(2, 1, 2, columns.length);
+    const subCell = sheet.getCell('A2');
+    const now = new Date();
+    subCell.value = `Generated ${now.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}  ·  ${exportJobs.length} matching role${exportJobs.length===1?'':'s'}  ·  ${connections.length} source${connections.length===1?'':'s'}`;
+    subCell.font = { name: 'Calibri', size: 10.5, italic: true, color: { argb: 'FF5B6A85' } };
+    subCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+    sheet.getRow(2).height = 20;
+    sheet.getRow(2).eachCell(c => { c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFE7EDF7'} }; });
+
+    sheet.getRow(3).height = 6;
+
+    const headerRow = sheet.getRow(4);
+    columns.forEach((c, i) => { headerRow.getCell(i + 1).value = c.header; });
+    headerRow.height = 24;
+    headerRow.eachCell(cell => {
+      cell.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: WHITE } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } };
+      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      cell.border = {
+        top: { style: 'thin', color: { argb: BORDER } }, bottom: { style: 'thin', color: { argb: BORDER } },
+        left: { style: 'thin', color: { argb: BORDER } }, right: { style: 'thin', color: { argb: BORDER } }
+      };
+    });
+
+    exportJobs.forEach((job, idx) => {
+      const rowIndex = 5 + idx;
+      const row = sheet.getRow(rowIndex);
+      row.values = [
+        idx + 1, job.title, job.description, job.summary, job.company, job.link,
+        job.sourceLabel || '—', job.recruiterName, job.recruiterEmail,
+        job.datePosted ? new Date(job.datePosted + 'T00:00:00') : null,
+        job.matchPercent / 100, job.salary || null, job.keywords.join(', ')
+      ];
+
+      const isBand = idx % 2 === 1;
+      row.eachCell((cell, colNumber) => {
+        cell.font = { name: 'Calibri', size: 10.5, color: { argb: 'FF152238' } };
+        cell.alignment = { vertical: 'top', horizontal: colNumber === 1 || colNumber === 11 ? 'center' : 'left', wrapText: [3,4,13].includes(colNumber) };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isBand ? LIGHT_BAND : WHITE } };
+        cell.border = {
+          top: { style: 'hair', color: { argb: BORDER } }, bottom: { style: 'hair', color: { argb: BORDER } },
+          left: { style: 'hair', color: { argb: BORDER } }, right: { style: 'hair', color: { argb: BORDER } }
+        };
+      });
+
+      row.getCell(2).font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: NAVY_DARK } };
+
+      const linkCell = row.getCell(6);
+      linkCell.value = { text: job.link, hyperlink: job.link };
+      linkCell.font = { name: 'Calibri', size: 10.5, color: { argb: 'FF2F6FED' }, underline: true };
+
+      row.getCell(10).numFmt = 'dd-mmm-yyyy';
+      row.getCell(10).alignment = { vertical: 'top', horizontal: 'center' };
+
+      row.getCell(11).numFmt = '0%';
+      row.getCell(11).font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: NAVY_DARK } };
+
+      row.getCell(12).numFmt = '€#,##0';
+      row.getCell(12).alignment = { vertical: 'top', horizontal: 'right' };
+
+      row.height = 46;
+    });
+
+    const lastRow = 4 + exportJobs.length;
+    sheet.autoFilter = { from: { row: 4, column: 1 }, to: { row: lastRow, column: columns.length } };
+    sheet.addConditionalFormatting({
+      ref: `K5:K${lastRow}`,
+      rules: [{
+        type: 'colorScale',
+        cfvo: [{ type: 'min' }, { type: 'percentile', value: 50 }, { type: 'max' }],
+        color: [{ argb: 'FFF4B7B0' }, { argb: 'FFFCE9A8' }, { argb: 'FFA9DDBE' }]
+      }]
+    });
+    sheet.getRow(1).eachCell(c => { c.border = { bottom: { style:'medium', color:{argb:NAVY_DARK} } }; });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `launchpad-job-report-${dateStr}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err){
+    console.error(err);
+    alert('Something went wrong building the Excel file. Please try again.');
+  } finally {
+    els.downloadBtn.disabled = false;
+    els.downloadBtn.innerHTML = originalLabel;
+  }
+}
+
+document.getElementById('tabSearch').addEventListener('click', () => switchView('search'));
+document.getElementById('tabSettings').addEventListener('click', () => switchView('settings'));
+
+document.getElementById('btnRefresh').addEventListener('click', refreshJobs);
+document.getElementById('btnReset').addEventListener('click', resetFilters);
+els.btnPrevPage.addEventListener('click', () => goToPage(-1));
+els.btnThemeToggle.addEventListener('click', toggleTheme);
+els.btnTranslateToggle.addEventListener('click', toggleTranslate);
+els.btnNextPage.addEventListener('click', () => goToPage(1));
+els.downloadBtn.addEventListener('click', downloadExcel);
+[els.keyword, els.experience, els.salary].forEach(el => {
+  el.addEventListener('input', applyClientFilters);
+});
+document.querySelectorAll('thead th[data-key]').forEach(th => {
+  th.addEventListener('click', () => sortJobs(th.dataset.key));
+});
+
+document.getElementById('btnAddConnection').addEventListener('click', () => openModal(null));
+document.getElementById('btnModalCancel').addEventListener('click', closeModal);
+document.getElementById('btnModalSave').addEventListener('click', saveModal);
+modalEls.providerAdzuna.addEventListener('click', () => setModalProvider('adzuna'));
+modalEls.providerCustom.addEventListener('click', () => setModalProvider('custom'));
+modalEls.keyModeBoth.addEventListener('click', () => setKeyMode('both'));
+modalEls.keyModeKeyOnly.addEventListener('click', () => setKeyMode('key_only'));
+modalEls.authModeQuery.addEventListener('click', () => setAuthMode('query'));
+modalEls.authModeHeader.addEventListener('click', () => setAuthMode('header'));
+modalEls.advancedToggle.addEventListener('click', () => modalEls.advancedFields.classList.toggle('show'));
+modalEls.backdrop.addEventListener('click', (e) => { if (e.target === modalEls.backdrop) closeModal(); });
+
+async function init(){
+  initTheme();
+  initTranslate();
+  populateModalCountrySelect();
+  await loadConnections();
+  renderConnections();
+  render();
+}
+init();
+</script>
+</body>
+</html>
